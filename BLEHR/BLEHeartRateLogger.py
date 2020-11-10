@@ -25,6 +25,11 @@ import sqlite3
 import pexpect
 import argparse
 import configparser
+import csv
+import pandas as pd	
+
+data=["time"]
+
 
 logging.basicConfig(format="%(asctime)-15s  %(message)s")
 log = logging.getLogger("BLEHeartRateLogger")
@@ -120,7 +125,7 @@ def insert_db(sq, res, period, min_ce=2, max_ce=60 * 2, grace_commit=2 / 3.):
         for rr in res["rr"]:
             sq.execute("INSERT INTO hrm VALUES (?, ?, ?)", (tstamp, res["hr"], rr))
     else:
-        sq.execute("INSERT INTO hrm VALUES (?, ?, ?)", (tstamp, res["hr"], -1))
+        sq.execute("INSERT INTO hrm VALUES (?, ?, ?)", (tstamp, res["hr"], -1)) #res["hr"] der er vores heart rate data 
 
     # Instead of pushing the data to the disk each time, we commit only every
     # 'commit_every'.
@@ -147,16 +152,13 @@ def insert_db(sq, res, period, min_ce=2, max_ce=60 * 2, grace_commit=2 / 3.):
 def get_ble_hr_mac():
     """
     Scans BLE devices and returs the address of the first device found.
-
-    Tilføj en liste af navne på bluetooth heart rate monitors så vi får
-    lov til at vælge en på listen at tilslutte til. I stedet for den første.
     """
 
     while 1:
         log.info("Trying to find a BLE device")
         hci = pexpect.spawn("hcitool lescan")
         try:
-            hci.expect("([0-9A-F]{2}[:-]){5}([0-9A-F]{2})", timeout=20)
+            hci.expect("([0-9A-F]{2}[:-]){5}([0-9A-F]{2})", timeout=20) 
             addr = hci.match.group(0)
             hci.close()
             break
@@ -173,6 +175,24 @@ def get_ble_hr_mac():
     # We wait for the 'hcitool lescan' to finish
     time.sleep(1)
     return addr
+
+
+def heart_data(res):
+	t0=time.time()				## The time at which the saving starts
+	tQ=0.5					## Sampling tiime in seconds
+	filename="data-"+str(t0)+"-"+str(tQ)		## We use this time also in the filename, so that our program saves a unique filename
+
+	while(time.time()-t0)<3:		## For three seconds
+		data_heart = str(res["hr"])
+		data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
+		time.sleep(tQ)		## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz
+## Saving our data in the .csv file
+	with open(filename+".csv","w") as my_file:
+		my_writer=csv.writer(my_file)
+		for each_row in data:
+			my_writer.writerow(each_row)
+## Loads the .csv file that we just saved as a panda dataframe named dat
+	dat=pd.read_csv(filename+".csv")
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -306,14 +326,16 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
             res = interpret(list(data))
 
             log.debug(res)
-
+            heart_data(res)
             if sqlfile is None:
-                log.info("Heart rate: " + str(res["hr"]))
-                continue
+            	
+            	log.info("Heart rate: " + str(res["hr"]))
+            	continue
 
             # Push the data to the database
+            
             insert_db(sq, res, period)
-
+            
     if sqlfile is not None:
         # We close the database properly
         sq.commit()
