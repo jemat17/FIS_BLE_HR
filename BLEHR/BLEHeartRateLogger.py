@@ -228,7 +228,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
             gt.sendline("connect")
 
             try:
-                i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30)
+                i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30) # Tid i secunder
                 if i == 0:
                     gt.expect(r"\[LE\]>", timeout=30)
 
@@ -248,7 +248,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
         log.info("Connected to " + addr)
 
         if check_battery:
-            gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb")
+            gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Returnere batteri niveau!
             try:
                 gt.expect("value: ([0-9a-f]+)")
                 battery_level = gt.match.group(1)
@@ -267,14 +267,14 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
                     gt.expect(r"handle: (0x[0-9a-f]+), uuid: ([0-9a-f]{8})", timeout=10)
                 except pexpect.TIMEOUT:
                     break
-                handle = gt.match.group(1).decode()
+                handle = gt.match.group(1).decode() 
                 uuid = gt.match.group(2).decode()
 
-                if uuid == "00002902" and hr_handle:
+                if uuid == "00002902" and hr_handle: # HRM interaction (the handle that corresponds to UUID 0x2902)
                     hr_ctl_handle = handle
                     break
 
-                elif uuid == "00002a37":
+                elif uuid == "00002a37": # 2A37 Er stadart til uuid which is used for getting heart rates data from hrm device
                     hr_handle = handle
 
             if hr_handle == None:
@@ -283,8 +283,8 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
         if hr_ctl_handle:
             # We send the request to get HRM notifications
-            gt.sendline("char-write-req " + hr_ctl_handle + " 0100")
-
+            gt.sendline("char-write-req " + hr_ctl_handle + " 0100") # char-write-req beder om at få HR målingerne. FORSTÅR IKKE DET HER! Hvordan giver den alt data
+            
         # Time period between two measures. This will be updated automatically.
         period = 1.
         last_measure = time.time() - period
@@ -320,10 +320,10 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
             period = period + 1 / 16. * ((tmeasure - last_measure) - period)
             last_measure = tmeasure
 
-            # Get data from gatttool
-            datahex = gt.match.group(1).strip()
-            data = map(lambda x: int(x, 16), datahex.split(b' '))
-            res = interpret(list(data))
+            # Get data from gatttool     
+            datahex = gt.match.group(1).strip() # Tager et input fra ???????????
+            data = map(lambda x: int(x, 16), datahex.split(b' ')) #Convertere fra HEX til int.
+            res = interpret(list(data))  # Skal converteres til en list for at kunne læse eller se indholdet.
 
             log.debug(res)
             heart_data(res)
