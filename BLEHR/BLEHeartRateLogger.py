@@ -194,6 +194,14 @@ def heart_data(res):
 		my_writer.writerow(each_row)
 ## Loads the .csv file that we just saved as a panda dataframe named dat
 	dat = pd.read_csv(filename+".csv")
+	
+	
+	myfigure=dat.plot().get_figure()
+	myfigure.savefig(filename+"samplingInterval.png")
+	print(dat,dat.time.diff())
+## We save and display the figure, with all the values on the window
+	fig=dat.plot(x="x",y="y").get_figure()
+	fig.savefig(filename+".png")
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
