@@ -159,8 +159,11 @@ def get_ble_hr_mac():
 		log.info("Trying to find a BLE device")
 		hci = pexpect.spawn("hcitool lescan")
 		try:
-			hci.expect("([0-9A-F]{2}[:-]){5}([0-9A-F]{2})", timeout=20) 
-			addr = hci.match.group(0)
+			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=20) 
+			addr = hci.match.group(1).decode()
+			name = hci.match.group(4).decode()
+			print(" ADDR " , addr)
+			print(" NAME " , name)
 			hci.close()
 			break
 
