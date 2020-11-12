@@ -182,16 +182,15 @@ def heart_data(res):
 	tQ=0.5					## Sampling tiime in seconds
 	filename="data-"+str(t0)+"-"+str(tQ)		## We use this time also in the filename, so that our program saves a unique filename
 
-	while(time.time()-t0)<3:		## For three seconds
-		data_heart = str(res["hr"])
-		data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
-		time.sleep(tQ)		## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz
+
+	data_heart = str(res["hr"])
+	data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
+	time.sleep(tQ)		## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz
 ## Saving our data in the .csv file
 	my_file = open(filename+".csv","w") 
 	my_writer=csv.writer(my_file)
 	# Måske tjekke rækker i data vs rækker i csv
-	for each_row in data: # måske ikke alle rækker måske bare nye? 
-		my_writer.writerow(each_row)
+	my_writer.writerow(data)
 ## Loads the .csv file that we just saved as a panda dataframe named dat
 	dat = pd.read_csv(filename+".csv")
 
