@@ -27,6 +27,7 @@ import argparse
 import configparser
 import csv
 import pandas as pd	
+import easygui as eg
 
 data=["time"]
 
@@ -176,31 +177,26 @@ def get_ble_hr_mac():
 	time.sleep(1)
 	return addr
 
+data=[["time","y"]]
 
 def heart_data(res):
 	t0=time.time()				## The time at which the saving starts
-	tQ=0.5					## Sampling tiime in seconds
-	filename="data-"+str(t0)+"-"+str(tQ)		## We use this time also in the filename, so that our program saves a unique filename
-
-
+	tQ=0.05				## Sampling tiime in seconds
+	
+	filename="data"		## We use this time also in the filename, so that our program saves a unique filename
 	data_heart = str(res["hr"])
-	data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
-	time.sleep(tQ)		## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz
-## Saving our data in the .csv file
-	my_file = open(filename+".csv","w") 
-	my_writer=csv.writer(my_file)
+		
+	
+				## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz	
+	data.append([t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
+	time.sleep(tQ)
+	## Saving our data in the .csv file
+	with open(filename+".csv","w") as my_file:
+		my_file = open(filename+".csv","w") 
+		my_writer=csv.writer(my_file)
+		for each_row in data:
+			my_writer.writerow(each_row)
 	# Måske tjekke rækker i data vs rækker i csv
-	my_writer.writerow(data)
-## Loads the .csv file that we just saved as a panda dataframe named dat
-	dat = pd.read_csv(filename+".csv")
-	
-	
-	myfigure=dat.plot().get_figure()
-	myfigure.savefig(filename+"samplingInterval.png")
-	print(dat,dat.time.diff())
-## We save and display the figure, with all the values on the window
-	fig=dat.plot(x="x",y="y").get_figure()
-	fig.savefig(filename+".png")
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -349,6 +345,14 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		sq.commit()
 		sq.close()
 
+	## Loads the .csv file that we just saved as a panda dataframe named dat
+	dat = pd.read_csv("data.csv")
+	myfigure=dat.plot.scatter(x="time",y="y").get_figure()
+	myfigure.savefig("data-sampling.png")
+	eg.msgbox(image="myfigure.png")
+
+	
+	
 	# We quit close the BLE connection properly
 	gt.sendline("quit")
 	try:
