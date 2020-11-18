@@ -22,6 +22,8 @@ Run the script as root user or correctly specify the rights on `hcitool` and `ga
 ## Usage
 
 To start the tool (as root or with correct rights):
+
+Make sure hcitool can run without root. 
 ```
 # ./BLEHeartRateLogger.py
 2015-01-10 13:40:59,326  Trying to find a BLE device
@@ -70,7 +72,22 @@ This should open a prompt. Type the following commands:
 
 In case one of the steps mentionned above fails, check your Linux installation and eventually `bluez` version (>= v.5 recommended).
 
+## HCItool without sudo:
 
+Installs linux capabilities manipulation tools:
+#sudo apt-get install libcap2-bin
+
+Sets the missing capabilities on the executable quite like the setuid bit:
+#sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
+
+Next check that all is good: 
+#getcap !$
+
+Should say:
+> getcap `which hcitool`
+> /usr/bin/hcitool = cap_net_admin,cap_net_raw+eip
+ 
+ 
 
 ## Contributing
 
