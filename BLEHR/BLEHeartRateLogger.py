@@ -30,6 +30,7 @@ import pandas as pd
 import easygui as eg
 import pyautogui
 from matplotlib import pyplot as plt
+import re
 
 data=["time"]
 
@@ -159,16 +160,25 @@ def get_ble_hr_mac():
 
 	while 1:
 		log.info("Trying to find a BLE device")
+		dictOfBLE = {"Name": "macAddr"}
+		regex = re.compile(r'(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)')
 		hci = pexpect.spawn("hcitool lescan", encoding='utf-8')
-		hci.logfile = open("mylog", "w")
-		time.sleep(10)
+		hci.logfile = open("mylog.log", "w")
+		time.sleep(5)
 		try:
+			#with open('mylog.log', 'r') as mylog:
+			#	print([x.group() for x in regex.finditer(mylog)])
 			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=20) 
 			addr = hci.match.group(1).decode()
 			name = hci.match.group(4).decode()
-			print(" NAME " , name)
-			print(" ADDR " , addr)
-				
+			with open('mylog.log', 'r') as mylog:
+				for line in mylog:
+					if name not "unknown":
+						dictOfBLE[name] = addr
+					# 	print(" NAME " , name)
+					# 	print(" ADDR " , addr)
+						
+
 			hci.close()
 			break
 
@@ -188,7 +198,7 @@ def get_ble_hr_mac():
 data=[["time","y"]]
 t0=time.time()	
 
-def heart_data(res, firsthci):
+def heart_data(res, first):
 	filename="data"	
 	if first is False: 
 		first = True
@@ -276,6 +286,7 @@ def gui():
 	print("User selected option : ", end = " ") 
 	print(output) 
 
+<<<<<<< HEAD
 	device.append([,]) # har skal indsættes navn og adresse fra forskellige devices
 
 	if output == "Connect":
@@ -291,6 +302,15 @@ def gui():
 	if output == "Show HRV grapf":
 		print("hey")
 		#få vist graf med HRV
+=======
+	#device.append([,]) # har skal indsættes data fra forskellige devices
+
+	if output == "Connect":
+		msg ="Which devices would you like to connect to?"
+		title = "Connect"
+		choices = [device[0],device[1]]
+		choice = choicebox(msg, title, choices)
+>>>>>>> 35daa18f9e1813b225972a563130a4cf5cc22edf
 
 
 
