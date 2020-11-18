@@ -276,13 +276,21 @@ def gui():
 	print("User selected option : ", end = " ") 
 	print(output) 
 
-	device.append([,]) # har skal indsættes data fra forskellige devices
+	device.append([,]) # har skal indsættes navn og adresse fra forskellige devices
 
 	if output == "Connect":
 	msg ="Which devices would you like to connect to?"
 	title = "Connect"
 	choices = [device[0],device[1]]
 	choice = choicebox(msg, title, choices)
+	
+	if output == "Show HR grapf":
+		print("hey")
+		#få vist graf med HR
+	
+	if output == "Show HRV grapf":
+		print("hey")
+		#få vist graf med HRV
 
 
 
