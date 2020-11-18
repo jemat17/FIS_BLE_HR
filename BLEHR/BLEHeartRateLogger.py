@@ -185,13 +185,8 @@ def get_ble_hr_mac():
 	time.sleep(1)
 	return addr
 
-<<<<<<< HEAD
 data=[["time","y"]]
 t0=time.time()	
-
-def heart_data(res):
-=======
-t0=time.time()
 
 def heart_data(res, firsthci):
 	filename="data"	
@@ -213,7 +208,6 @@ def heart_data(res, firsthci):
 			}
 			csv_writer.writerow(data)
 
->>>>>>> 6715c13dd074976fbf815d06b175db3386c27354
 	
 	tQ=0.5				## Sampling tiime in seconds
 	
