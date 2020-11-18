@@ -163,23 +163,37 @@ def get_ble_hr_mac():
 		dictOfBLE = {"Name": "macAddr"}
 		regex = re.compile(r'(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)')
 		hci = pexpect.spawn("hcitool lescan", encoding='utf-8')
-		hci.logfile = open("mylog.log", "w")
-		time.sleep(5)
+		hci.logfile = open("mylog.txt", "w")
+		time.sleep(2)
 		try:
+			with open("mylog3.txt", "r") as mylogs:
+				lines = []
+				for line in mylogs:
+					if "(unknown)" not in line:
+						split_list=line.split()
+						for item in split_list:
+							lines.append(item)
+				print(lines)
+						
+
+									
+									
 			#with open('mylog.log', 'r') as mylog:
 			#	print([x.group() for x in regex.finditer(mylog)])
 			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=20) 
 			addr = hci.match.group(1).decode()
 			name = hci.match.group(4).decode()
-			with open('mylog.log', 'r') as mylog:
+
+			with open("mylog.txt", "r") as mylog:
 				for line in mylog:
-					if name not "unknown":
-						dictOfBLE[name] = addr
+					#if "(unknown)" in line:
+					log.info("HEJ MED DIG")
+						#dictOfBLE[name] = addr
 					# 	print(" NAME " , name)
 					# 	print(" ADDR " , addr)
 						
 
-			hci.close()
+				hci.close()
 			break
 
 		except pexpect.TIMEOUT:
@@ -286,14 +300,14 @@ def gui():
 	print("User selected option : ", end = " ") 
 	print(output) 
 
-<<<<<<< HEAD
-	device.append([,]) # har skal indsættes navn og adresse fra forskellige devices
+
+	device.append([2,5]) # har skal indsættes navn og adresse fra forskellige devices
 
 	if output == "Connect":
-	msg ="Which devices would you like to connect to?"
-	title = "Connect"
-	choices = [device[0],device[1]]
-	choice = choicebox(msg, title, choices)
+		msg ="Which devices would you like to connect to?"
+		title = "Connect"
+		choices = [device[0],device[1]]
+		choice = choicebox(msg, title, choices)
 	
 	if output == "Show HR grapf":
 		print("hey")
@@ -302,7 +316,7 @@ def gui():
 	if output == "Show HRV grapf":
 		print("hey")
 		#få vist graf med HRV
-=======
+		
 	#device.append([,]) # har skal indsættes data fra forskellige devices
 
 	if output == "Connect":
@@ -310,10 +324,6 @@ def gui():
 		title = "Connect"
 		choices = [device[0],device[1]]
 		choice = choicebox(msg, title, choices)
->>>>>>> 35daa18f9e1813b225972a563130a4cf5cc22edf
-
-
-
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
