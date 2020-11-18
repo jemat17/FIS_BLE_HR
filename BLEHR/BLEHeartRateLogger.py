@@ -28,6 +28,7 @@ import configparser
 import csv
 import pandas as pd	
 import easygui as eg
+from matplotlib import pyplot as plt
 
 data=["time"]
 
@@ -157,13 +158,16 @@ def get_ble_hr_mac():
 
 	while 1:
 		log.info("Trying to find a BLE device")
-		hci = pexpect.spawn("hcitool lescan")
+		hci = pexpect.spawn("hcitool lescan", encoding='utf-8')
+		hci.logfile = open("mylog", "w")
+		time.sleep(10)
 		try:
 			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=20) 
 			addr = hci.match.group(1).decode()
 			name = hci.match.group(4).decode()
-			print(" ADDR " , addr)
 			print(" NAME " , name)
+			print(" ADDR " , addr)
+				
 			hci.close()
 			break
 
@@ -180,32 +184,64 @@ def get_ble_hr_mac():
 	time.sleep(1)
 	return addr
 
-data=[["time","y"]]
-t0=time.time()	
-def heart_data(res):
+t0=time.time()
+
+def heart_data(res, firsthci):
+	filename="data"	
+	if first is False: 
+		first = True
+		fieldnames = ["time", "HR"]
+		with open(filename + '.csv', 'w') as csv_file:
+			csv_writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
+			csv_writer.writeheader
+
+	while True:
+
+		with open('data.csv', 'a') as csv_file:
+			csv_writer = csv.DictWriter(csv_file, fieldnames)
+
+			data = {
+				"time": time.time()-t0,
+				"HR": res["hr"]
+			}
+			csv_writer.writerow(data)
+
 	
 	tQ=0.5				## Sampling tiime in seconds
 	
-	filename="data"		## We use this time also in the filename, so that our program saves a unique filename
+		## We use this time also in the filename, so that our program saves a unique filename
 	data_heart = str(res["hr"])
 		
 	
-				## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz	
-	data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
-	#time.sleep(tQ)
-	## Saving our data in the .csv file
-	with open(filename+".csv","w") as my_file:
-		my_file = open(filename+".csv","w") 
-		my_writer=csv.writer(my_file)
-		for each_row in data:
-			my_writer.writerow(each_row)
+	# 			## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz	
+	# data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
+	# #time.sleep(tQ)
+	# ## Saving our data in the .csv file
+	# with open(filename+".csv","w") as my_file:
+	# 	my_file = open(filename+".csv","w") 
+	# 	my_writer=csv.writer(my_file)
+	# 	for each_row in data:
+	# 		my_writer.writerow(each_row)
 	# Måske tjekke rækker i data vs rækker i csv
+
+def plotData():
+	data = pd.read_csv('data.csv')
+	x = data["time"]
+	y1 = data["HR"]
+
+	plt.cla()
+
+	plt.plot(x, y1, label = 'HR')
+
+	plt.legend(loc = 'upper left')
+	plt.tight_layout()
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
 	"""
 	main routine to which orchestrates everything
 	"""
+	first = False
 
 	if sqlfile is not None:
 		# Init database connection
@@ -333,7 +369,9 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			res = interpret(list(data))  # Skal converteres til en list for at kunne læse eller se indholdet.
 
 			log.debug(res)
-			heart_data(res)
+			heart_data(res, first)
+			ani = FuncAnimation(plt.gct(), plotData, interval = 1000)
+			plt.show()
 			if sqlfile is None:
 				
 				log.info("Heart rate: " + str(res["hr"]))
@@ -368,6 +406,8 @@ def cli():
 	"""
 	Entry point for the command line interface
 	"""
+
+
 	args = parse_args()
 
 	if args.g != "gatttool" and not os.path.exists(args.g):
