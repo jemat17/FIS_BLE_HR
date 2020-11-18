@@ -28,6 +28,8 @@ import configparser
 import csv
 import pandas as pd	
 import easygui as eg
+import pyautogui
+
 
 data=["time"]
 
@@ -182,6 +184,7 @@ def get_ble_hr_mac():
 
 data=[["time","y"]]
 t0=time.time()	
+
 def heart_data(res):
 	
 	tQ=0.5				## Sampling tiime in seconds
@@ -200,6 +203,55 @@ def heart_data(res):
 		for each_row in data:
 			my_writer.writerow(each_row)
 	# Måske tjekke rækker i data vs rækker i csv
+
+
+
+
+
+def gui():
+  
+	device=[["addr","name"]]
+	# message to be displayed  
+	text = "Welcome to the Heart Rate monitoring program"
+  
+	# window title 
+	title = "HR monitor"
+  
+	# button list 
+	button_list = [] 
+  
+	# button 1 
+	button1 = "Connect"
+  
+	# second button 
+	button2 = "Show HR grapf"
+  
+	# third button 
+	button3 = "Show HRV grapf"
+  
+	# appending button to the button list 
+	button_list.append(button1) 
+	button_list.append(button2) 
+	button_list.append(button3) 
+  
+  
+	# creating a button box 
+	output = buttonbox(text, title, button_list) 
+  
+	# printing the button pressed by the user 
+	print("User selected option : ", end = " ") 
+	print(output) 
+
+	device.append([,]) # har skal indsættes data fra forskellige devices
+
+	if output == "Connect":
+	msg ="Which devices would you like to connect to?"
+	title = "Connect"
+	choices = [device[0],device[1]]
+	choice = choicebox(msg, title, choices)
+
+
+
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -352,7 +404,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	dat = pd.read_csv("data.csv")
 	myfigure=dat.plot.scatter(x="time",y="y").get_figure()
 	myfigure.savefig("data-sampling.png")
-	eg.msgbox(image="myfigure.png")
+	eg.msgbox(image="data-sampling.png")
 
 	
 	
