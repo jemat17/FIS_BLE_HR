@@ -160,11 +160,12 @@ def get_ble_hr_mac():
 
 	while 1:
 		log.info("Trying to find a BLE device")
-		dictOfBLE = {"Name": "macAddr"}
-		regex = re.compile(r'(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)')
+		#dictOfBLE = {"Name": "macAddr"}
+		#regex = re.compile(r'(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)')
 		hci = pexpect.spawn("hcitool lescan", encoding='utf-8')
 		hci.logfile = open("mylog.txt", "w")
-		time.sleep(2)
+		time.sleep(10)
+		hci.logfile.close()
 		try:
 			with open("mylog.txt", "r") as mylogs:
 				lines = []
@@ -192,6 +193,9 @@ def get_ble_hr_mac():
 						
 
 				hci.close()
+
+			hci.close()
+
 			break
 
 		except pexpect.TIMEOUT:
@@ -205,7 +209,7 @@ def get_ble_hr_mac():
 
 	# We wait for the 'hcitool lescan' to finish
 	time.sleep(1)
-	return addr
+	#return addr
 
 data=[["time","y"]]
 t0=time.time()	
@@ -264,7 +268,7 @@ def plotData():
 
 
 
-def gui():
+def gui(lines):
   
 	device=[["addr","name"]]
 	# message to be displayed  
@@ -305,7 +309,12 @@ def gui():
 		msg ="Which devices would you like to connect to?"
 		title = "Connect"
 		choices = [device[0],device[1]]
+
 		choice = eg.choicebox(msg, title, choices)
+
+		choice = choicebox(msg, title, choices)
+		return device[0]
+
 	
 	if output == "Show HR grapf":
 		print("hey")
@@ -317,11 +326,6 @@ def gui():
 		
 	#device.append([,]) # har skal indsættes data fra forskellige devices
 
-	if output == "Connect":
-		msg ="Which devices would you like to connect to?"
-		title = "Connect"
-		choices = [device[0],device[1]]
-		choice = choicebox(msg, title, choices)
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
