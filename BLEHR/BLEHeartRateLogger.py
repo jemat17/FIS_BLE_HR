@@ -154,51 +154,22 @@ def insert_db(sq, res, period, min_ce=2, max_ce=60 * 2, grace_commit=2 / 3.):
 
 
 def get_ble_hr_mac():
+
 	"""
 	Scans BLE devices and returs the address of the first device found.
 	"""
-
+	
 	while 1:
 		log.info("Trying to find a BLE device")
-		#dictOfBLE = {"Name": "macAddr"}
-		#regex = re.compile(r'(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)')
-		hci = pexpect.spawn("hcitool lescan", encoding='utf-8')
-		hci.logfile = open("mylog.txt", "w")
-		time.sleep(10)
-		hci.logfile.close()
+		hci = pexpect.spawn("hcitool lescan, encoding='utf-8'") 
+		hci.logfile = open("mylog.txt", "wb")
 		try:
-			with open("mylog.txt", "r") as mylogs:
-				lines = []
-				for line in mylogs:
-					if "(unknown)" not in line:
-						split_list=line.split()
-						for item in split_list:
-							lines.append(item)
-				print(lines)
-												
-									
-			#with open('mylog.log', 'r') as mylog:
-			#	print([x.group() for x in regex.finditer(mylog)])
-			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=20) 
-			addr = hci.match.group(1).decode()
-			name = hci.match.group(4).decode()
-
-			with open("mylog.txt", "r") as mylog:
-				for line in mylog:
-					#if "(unknown)" in line:
-					log.info("HEJ MED DIG")
-						#dictOfBLE[name] = addr
-					# 	print(" NAME " , name)
-					# 	print(" ADDR " , addr)
-						
-
-				hci.close()
-
+			
+			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)						
 			hci.close()
-
-			break
-
+			
 		except pexpect.TIMEOUT:
+			return None
 			time.sleep(20)
 			continue
 
@@ -209,7 +180,7 @@ def get_ble_hr_mac():
 
 	# We wait for the 'hcitool lescan' to finish
 	time.sleep(1)
-	#return addr
+	return 
 
 data=[["time","y"]]
 t0=time.time()	
@@ -344,10 +315,91 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	if addr is None:
 		# In case no address has been provided, we scan to find any BLE devices
 		addr = get_ble_hr_mac()
+		
+		with open("mylog.txt", "r") as mylogs:
+				lines = []
+				for line in mylogs:
+					if "(unknown)" not in line: #husk at tilføje NOT 
+						split_list=line.split()
+						for item in split_list:
+							lines.append(item)
+				log.info(len(lines))
 		if addr == None:
-			sq.close()
-			return
+	# message to be displayed  
+			text = "Welcome to the Heart Rate monitoring program"
+  
+	# window title 
+			title = "HR monitor"
+  
+	# button list 
+			button_list = [] 
+  
+	# button 1 
+			button1 = "Connect"
+  
+	# second button 
+			button2 = "Show HR grapf"
+  
+	# third button 
+			button3 = "Show HRV grapf"
+  
+	# appending button to the button list 
+			button_list.append(button1) 
+			button_list.append(button2) 
+			button_list.append(button3) 
+  
+  
+	# creating a button box 
+			output = eg.buttonbox(text, title, button_list) 
+  
+	# printing the button pressed by the user 
+			print("User selected option : ", end = " ") 
+			print(output) 
 
+
+			if output == "Connect":
+				msg ="Which devices would you like to connect to?"
+				title = "Connect"
+				if len(lines)>4:
+					choices = [lines[4]]
+				if len(lines)>6:
+					choices = [lines[4], lines[6]]
+				if len(lines)>8:
+					choices = [lines[4], lines[6],lines[8]]
+
+				choice = eg.choicebox(msg, title, choices)
+				
+				if len(lines)>4:
+					if choice == lines[4]:
+						addr = lines[3]
+				
+				if len(lines)>6:
+					if choice == lines[4]:
+						addr = lines[3]	
+					if choice == lines[6]:
+						addr = lines[5]
+						
+				if len(lines)>8:
+					if choice == lines[4]:
+						addr = lines[3]	
+					if choice == lines[6]:
+						addr = lines[5]
+					if choice == lines[8]:
+						addr = lines[7]
+				
+				
+			if output == "Show HR grapf":
+				print("hey3")
+				#få vist graf med HR
+	
+			if output == "Show HRV grapf":
+				print("hey5")
+				#få vist graf med HRV
+		
+	
+			#sq.close()
+			return
+	
 	hr_ctl_handle = None
 	retry = True
 	while retry:

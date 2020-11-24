@@ -87,7 +87,8 @@ Should say:
 > getcap `which hcitool`
 > /usr/bin/hcitool = cap_net_admin,cap_net_raw+eip
  
- 
+#If connection lost: 
+sudo service bluetooth restart 
 
 ## Contributing
 
