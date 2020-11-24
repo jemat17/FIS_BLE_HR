@@ -160,13 +160,14 @@ def get_ble_hr_mac():
 
 	while 1:
 		log.info("Trying to find a BLE device")
-		dictOfBLE = {"Name": "macAddr"}
-		regex = re.compile(r'(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)')
+		#dictOfBLE = {"Name": "macAddr"}
+		#regex = re.compile(r'(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)')
 		hci = pexpect.spawn("hcitool lescan", encoding='utf-8')
 		hci.logfile = open("mylog.txt", "w")
-		time.sleep(2)
+		time.sleep(10)
+		hci.logfile.close()
 		try:
-			with open("mylog3.txt", "r") as mylogs:
+			with open("mylog.txt", "r") as mylogs:
 				lines = []
 				for line in mylogs:
 					if "(unknown)" not in line:
@@ -174,26 +175,7 @@ def get_ble_hr_mac():
 						for item in split_list:
 							lines.append(item)
 				print(lines)
-						
-
-									
-									
-			#with open('mylog.log', 'r') as mylog:
-			#	print([x.group() for x in regex.finditer(mylog)])
-			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=20) 
-			addr = hci.match.group(1).decode()
-			name = hci.match.group(4).decode()
-
-			with open("mylog.txt", "r") as mylog:
-				for line in mylog:
-					#if "(unknown)" in line:
-					log.info("HEJ MED DIG")
-						#dictOfBLE[name] = addr
-					# 	print(" NAME " , name)
-					# 	print(" ADDR " , addr)
-						
-
-				hci.close()
+			hci.close()
 			break
 
 		except pexpect.TIMEOUT:
@@ -207,7 +189,7 @@ def get_ble_hr_mac():
 
 	# We wait for the 'hcitool lescan' to finish
 	time.sleep(1)
-	return addr
+	#return addr
 
 data=[["time","y"]]
 t0=time.time()	
@@ -266,7 +248,7 @@ def plotData():
 
 
 
-def gui():
+def gui(lines):
   
 	device=[["addr","name"]]
 	# message to be displayed  
@@ -308,6 +290,7 @@ def gui():
 		title = "Connect"
 		choices = [device[0],device[1]]
 		choice = choicebox(msg, title, choices)
+		return device[0]
 	
 	if output == "Show HR grapf":
 		print("hey")
@@ -319,11 +302,6 @@ def gui():
 		
 	#device.append([,]) # har skal indsættes data fra forskellige devices
 
-	if output == "Connect":
-		msg ="Which devices would you like to connect to?"
-		title = "Connect"
-		choices = [device[0],device[1]]
-		choice = choicebox(msg, title, choices)
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
