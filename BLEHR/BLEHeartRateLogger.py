@@ -304,7 +304,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	main routine to which orchestrates everything
 	"""
 	first = False
-
+	
 	if sqlfile is not None:
 		# Init database connection
 		sq = sqlite3.connect(sqlfile)
