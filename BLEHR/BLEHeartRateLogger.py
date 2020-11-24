@@ -166,7 +166,7 @@ def get_ble_hr_mac():
 		hci.logfile = open("mylog.txt", "w")
 		time.sleep(2)
 		try:
-			with open("mylog3.txt", "r") as mylogs:
+			with open("mylog.txt", "r") as mylogs:
 				lines = []
 				for line in mylogs:
 					if "(unknown)" not in line:
@@ -174,9 +174,7 @@ def get_ble_hr_mac():
 						for item in split_list:
 							lines.append(item)
 				print(lines)
-						
-
-									
+												
 									
 			#with open('mylog.log', 'r') as mylog:
 			#	print([x.group() for x in regex.finditer(mylog)])
@@ -294,7 +292,7 @@ def gui():
   
   
 	# creating a button box 
-	output = buttonbox(text, title, button_list) 
+	output = eg.buttonbox(text, title, button_list) 
   
 	# printing the button pressed by the user 
 	print("User selected option : ", end = " ") 
@@ -307,7 +305,7 @@ def gui():
 		msg ="Which devices would you like to connect to?"
 		title = "Connect"
 		choices = [device[0],device[1]]
-		choice = choicebox(msg, title, choices)
+		choice = eg.choicebox(msg, title, choices)
 	
 	if output == "Show HR grapf":
 		print("hey")
