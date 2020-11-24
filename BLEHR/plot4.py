@@ -8,10 +8,13 @@ import pandas as pd
 
 app = dash.Dash('HR_data')
 
-data_dict = {"time":time_data,
-"HR": hr_data}
+max_length = 100
+time_data = deque(maxlen=max_length)
+hr_data = deque(maxlen=max_length)
 
-def updata_obd_values(time_data, hr_data):
+data_dict = {"time":time_data, "HR": hr_data}
+
+def update_obd_values(time_data, hr_data):
     data = pd.read_csv('data.csv')
     time_data.append(data['time'])
     hr_data.append(data['y'])
@@ -26,7 +29,7 @@ app.layout = html.Div([
                        }),
         ]),
     dcc.Dropdown(id='data', #Id is input for data.
-                 options=[{'label': 'HR live', 'value': hr_data} #Dropdown menu for choosing a graph
+                 options=[{'label': 'HR live', 'value': hr_data}], #Dropdown menu for choosing a graph
                  value='hr_data',
                  multi=True
                  ),
@@ -44,8 +47,10 @@ app.layout = html.Div([
 
 
 def update_graph(data_names):
+    graphs = []
     global time_data
     global hr_data
+
     time_data, hr_data = update_obd_values(time_data, hr_data)
 
 
@@ -57,24 +62,24 @@ def update_graph(data_names):
         class_choice = 'col s12'
 
 
-    
+    for data_name in data_names:
 
-    data = go.Scatter(
-        x=list(time_data),
-        y=list(data_dict['hr_data]),
-        name='Scatter',
-        fill="tozeroy",
-        fillcolor="#6897bb"
-        )
+        data = go.Scatter(
+            x=list(time_data),
+            y=list(data_dict['hr_data']),
+            name='Scatter',
+            fill="tozeroy",
+            fillcolor="#6897bb"
+            )
 
-    graphs.append(html.Div(dcc.Graph(
-        id=data_name,
-        animate=True,
-        figure={'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(time_data),max(time_data)]),
-                                                    yaxis=dict(range=[min(data_dict['hr_data']),max(data_dict['hr_data'])]),
-                                                    margin={'l':50,'r':1,'t':45,'b':1},
-                                                    title='{}'.format('hr_data'))}
-        ), className=class_choice))
+        graphs.append(html.Div(dcc.Graph(
+            id=data_name,
+            animate=True,
+            figure={'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(time_data),max(time_data)]),
+                                                        yaxis=dict(range=[min(data_dict['hr_data']),max(data_dict['hr_data'])]),
+                                                        margin={'l':50,'r':1,'t':45,'b':1},
+                                                        title='{}'.format('hr_data'))}
+            ), className=class_choice))
 
     return graphs
 
