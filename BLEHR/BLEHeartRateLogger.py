@@ -198,22 +198,11 @@ data=[["time","y"]]
 t0=time.time()	
 
 def heart_data(res, first):
-	filename="data"	
-	if first is False: 
-		first = True
-		fieldnames = ["time", "HR"]
-		with open(filename + '.csv', 'w') as csv_file:
-			csv_writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
-			csv_writer.writeheader
-
+	
 	#while True:
 	with open('data.csv', 'a') as csv_file:
-		csv_writer = csv.DictWriter(csv_file, fieldnames)
-
-		data = {
-			"time": time.time()-t0,
-			"HR": res["hr"]
-		}
+		csv_writer = csv.writer(csv_file)
+		data = [time.time()-t0, res["hr"]]
 		csv_writer.writerow(data)
 
 
@@ -275,8 +264,9 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	"""
 	main routine to which orchestrates everything
 	"""
-	first = False
-	startApp = True
+	if addr is None:
+		first = False
+		startApp = True
 	
 	if sqlfile is not None:
 		# Init database connection
@@ -488,9 +478,9 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 			log.debug(res)
 			heart_data(res, first)
-			if startApp == True:
-				app.run_server(debug=True)
-				startApp = False
+			# if startApp == True:
+			# 	app.run_server(debug=True)
+			# 	startApp = False
 			
 			
 			if sqlfile is None:
@@ -522,6 +512,10 @@ def cli():
 	"""
 	Entry point for the command line interface
 	"""
+	with open('data.csv', 'w') as csv_file:
+		csv_writer = csv.writer(csv_file)
+		data = ['Time', 'HR']
+		csv_writer.writerow(data)
 
 
 	args = parse_args()
