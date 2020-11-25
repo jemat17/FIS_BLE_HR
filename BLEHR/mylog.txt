@@ -1,1 +1,0 @@
-Set scan parameters failed: Input/output error

@@ -172,10 +172,13 @@ def get_ble_hr_mac():
 		log.info("Trying to find a BLE device")
 		hci = pexpect.spawn("hcitool lescan, encoding='utf-8'") 
 		hci.logfile = open("mylog.txt", "wb")
+		time.sleep(10)
 		try:
 			
-			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)		## Ikke nødvendig!				
+			#hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)		## Ikke nødvendig!				
 			hci.close()
+			break
+
 			
 		except pexpect.TIMEOUT:
 			return None
@@ -185,11 +188,11 @@ def get_ble_hr_mac():
 		except KeyboardInterrupt:
 			log.info("Received keyboard interrupt. Quitting cleanly.")
 			hci.close()
-			return None
+			
 
 	# We wait for the 'hcitool lescan' to finish
 	time.sleep(1)
-	return 
+	 
 
 data=[["time","y"]]
 t0=time.time()	
@@ -266,65 +269,7 @@ def update_graph_scatter(n):
                                                 yaxis=dict(range=[min(Y),max(Y)]))}
 
 
-
-
-
-def gui(lines):
-  
-	device=[["addr","name"]]
-	# message to be displayed  
-	text = "Welcome to the Heart Rate monitoring program"
-  
-	# window title 
-	title = "HR monitor"
-  
-	# button list 
-	button_list = [] 
-  
-	# button 1 
-	button1 = "Connect"
-  
-	# second button 
-	button2 = "Show HR grapf"
-  
-	# third button 
-	button3 = "Show HRV grapf"
-  
-	# appending button to the button list 
-	button_list.append(button1) 
-	button_list.append(button2) 
-	button_list.append(button3) 
-  
-  
-	# creating a button box 
-	output = eg.buttonbox(text, title, button_list) 
-  
-	# printing the button pressed by the user 
-	print("User selected option : ", end = " ") 
-	print(output) 
-
-
-	device.append([2,5]) # har skal indsættes navn og adresse fra forskellige devices
-
-	if output == "Connect":
-		msg ="Which devices would you like to connect to?"
-		title = "Connect"
-		choices = [device[0],device[1]]
-		choice = eg.choicebox(msg, title, choices)
-		choice = choicebox(msg, title, choices) # Hvorfor den her? To gange i træk??
-		return device[0]
-
-	
-	if output == "Show HR grapf":
-		print("hey")
-		app.run_server(debug=True) #få vist graf med HR
-	
-	if output == "Show HRV grapf":
-		print("hey")
-		#få vist graf med HRV
-		
-	#device.append([,]) # har skal indsættes data fra forskellige devices
-
+## Slut plot
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -342,7 +287,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 	if addr is None:
 		# In case no address has been provided, we scan to find any BLE devices
-		addr = get_ble_hr_mac()
+		get_ble_hr_mac()
 		
 		with open("mylog.txt", "r") as mylogs:
 				lines = []
@@ -388,6 +333,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			if output == "Connect":
 				msg ="Which devices would you like to connect to?"
 				title = "Connect"
+				choices = [] # Rasmus
 				if len(lines)>4:
 					choices = [lines[4]]
 				if len(lines)>6:
@@ -418,8 +364,10 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				
 			if output == "Show HR grapf":
 				print("hey3")
-				#få vist graf med HR
-	
+				if addr is not None:
+					app.run_server(debug=True)  #få vist graf med HR
+				else:
+					print("Please connect")
 			if output == "Show HRV grapf":
 				print("hey5")
 				#få vist graf med HRV
