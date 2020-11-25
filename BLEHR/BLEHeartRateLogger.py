@@ -31,6 +31,15 @@ import easygui as eg
 import pyautogui
 from matplotlib import pyplot as plt
 import re
+import dash
+from dash.dependencies import Output, Input
+import dash_core_components as dcc
+import dash_html_components as html
+import plotly
+import random
+import plotly.graph_objs as go
+from collections import deque
+
 
 data=["time"]
 
@@ -204,36 +213,55 @@ def heart_data(res, first):
 				"HR": res["hr"]
 			}
 			csv_writer.writerow(data)
+# Lets plot this shit!
+X = deque(maxlen=100)
+X.append(0)
+Y = deque(maxlen=100)
+Y.append(0)
 
-	
-	tQ=0.5				## Sampling tiime in seconds
-	
-		## We use this time also in the filename, so that our program saves a unique filename
-	data_heart = str(res["hr"])
-		
-	
-	# 			## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz	
-	# data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
-	# #time.sleep(tQ)
-	# ## Saving our data in the .csv file
-	# with open(filename+".csv","w") as my_file:
-	# 	my_file = open(filename+".csv","w") 
-	# 	my_writer=csv.writer(my_file)
-	# 	for each_row in data:
-	# 		my_writer.writerow(each_row)
-	# Måske tjekke rækker i data vs rækker i csv
+app = dash.Dash(__name__)
 
-def plotData():
-	data = pd.read_csv('data.csv')
-	x = data["time"]
-	y1 = data["HR"]
+app.layout = html.Div(
+    [
+        dcc.Graph(id='live-graph', animate=True),
+        dcc.Interval(
+            id='graph-update',
+            interval=1000,
+            n_intervals = 0
+        ),
+    ]
+)
 
-	plt.cla()
+app = dash.Dash(__name__)
 
-	plt.plot(x, y1, label = 'HR')
+app.layout = html.Div(
+    [
+        dcc.Graph(id='live-graph', animate=True),
+        dcc.Interval(
+            id='graph-update',
+            interval=1000,
+            n_intervals = 0
+        ),
+    ]
+)
 
-	plt.legend(loc = 'upper left')
-	plt.tight_layout()
+@app.callback(Output('live-graph', 'figure'),
+            [Input('graph-update', 'n_intervals')])
+
+def update_graph_scatter(n):
+    data_from_csv = pd.read_csv('data.csv')
+    X = data_from_csv['time'].values.tolist()
+    Y = data_from_csv['y'].values.tolist()
+
+    data = plotly.graph_objs.Scatter(
+            x=list(X),
+            y=list(Y),
+            name='Scatter',
+            mode= 'lines+markers'
+            )
+
+    return {'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
+                                                yaxis=dict(range=[min(Y),max(Y)]))}
 
 
 
@@ -513,7 +541,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 			log.debug(res)
 			heart_data(res, first)
-			ani = FuncAnimation(plt.gct(), plotData, interval = 1000)
+			
 			plt.show()
 			if sqlfile is None:
 				
@@ -529,11 +557,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		sq.commit()
 		sq.close()
 
-	## Loads the .csv file that we just saved as a panda dataframe named dat
-	dat = pd.read_csv("data.csv")
-	myfigure=dat.plot.scatter(x="time",y="y").get_figure()
-	myfigure.savefig("data-sampling.png")
-	eg.msgbox(image="data-sampling.png")
 
 	
 	

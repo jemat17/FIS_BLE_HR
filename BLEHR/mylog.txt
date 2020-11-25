@@ -1,13 +1,1 @@
-LE Scan ...
-64:A2:E2:3B:FB:C3 (unknown)
-64:A2:E2:3B:FB:C3 (unknown)
-25:67:56:EC:F7:C5 (unknown)
-D4:61:9D:0C:D5:6F (unknown)
-D4:61:9D:0C:D5:6F (unknown)
-65:30:69:D1:EF:88 (unknown)
-65:30:69:D1:EF:88 (unknown)
-70:59:6D:3E:04:28 (unknown)
-70:59:6D:3E:04:28 (unknown)
-49:D1:3D:79:F3:BB (unknown)
-49:D1:3D:79:F3:BB (unknown)
-30:86:22:34:2A:41 (unknown)
+Set scan parameters failed: Input/output error
