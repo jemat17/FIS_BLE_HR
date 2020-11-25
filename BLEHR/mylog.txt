@@ -1,0 +1,18 @@
+LE Scan ...
+D9:67:9A:AC:42:EB WHOOP 3A214456
+D9:67:9A:AC:42:EB (unknown)
+57:11:70:0E:C1:FB (unknown)
+41:93:FA:C4:CD:F5 (unknown)
+41:93:FA:C4:CD:F5 (unknown)
+26:9D:FE:9A:82:FE (unknown)
+7C:25:57:58:CA:CC (unknown)
+7C:25:57:58:CA:CC (unknown)
+78:8C:D6:51:E6:41 (unknown)
+78:8C:D6:51:E6:41 (unknown)
+57:11:70:0E:C1:FB (unknown)
+46:57:4A:30:02:87 (unknown)
+46:57:4A:30:02:87 (unknown)
+53:6B:EA:1C:74:2C (unknown)
+53:6B:EA:1C:74:2C (unknown)
+66:BB:06:1D:68:B5 (unknown)
+66:BB:06:1D:68:B5 (unknown)

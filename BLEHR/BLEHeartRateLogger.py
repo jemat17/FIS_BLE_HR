@@ -172,10 +172,10 @@ def get_ble_hr_mac():
 		log.info("Trying to find a BLE device")
 		hci = pexpect.spawn("hcitool lescan, encoding='utf-8'") 
 		hci.logfile = open("mylog.txt", "wb")
-		time.sleep(10)
+		time.sleep(5)
 		try:
 			
-			#hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)		## Ikke nødvendig!				
+			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)		## Ikke nødvendig!				
 			hci.close()
 			break
 
@@ -188,7 +188,7 @@ def get_ble_hr_mac():
 		except KeyboardInterrupt:
 			log.info("Received keyboard interrupt. Quitting cleanly.")
 			hci.close()
-			
+			break
 
 	# We wait for the 'hcitool lescan' to finish
 	time.sleep(1)
@@ -206,16 +206,15 @@ def heart_data(res, first):
 			csv_writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
 			csv_writer.writeheader
 
-	while True:
+	#while True:
+	with open('data.csv', 'a') as csv_file:
+		csv_writer = csv.DictWriter(csv_file, fieldnames)
 
-		with open('data.csv', 'a') as csv_file:
-			csv_writer = csv.DictWriter(csv_file, fieldnames)
-
-			data = {
-				"time": time.time()-t0,
-				"HR": res["hr"]
-			}
-			csv_writer.writerow(data)
+		data = {
+			"time": time.time()-t0,
+			"HR": res["hr"]
+		}
+		csv_writer.writerow(data)
 
 
 # Lets plot this shit!
@@ -255,8 +254,8 @@ app.layout = html.Div(
 
 def update_graph_scatter(n):
     data_from_csv = pd.read_csv('data.csv')
-    X = data_from_csv['time'].values.tolist()
-    Y = data_from_csv['y'].values.tolist()
+    X = data_from_csv.iloc[:,0].values.tolist()
+    Y = data_from_csv.iloc[:,1].values.tolist()
 
     data = plotly.graph_objs.Scatter(
             x=list(X),
@@ -277,6 +276,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	main routine to which orchestrates everything
 	"""
 	first = False
+	startApp = True
 	
 	if sqlfile is not None:
 		# Init database connection
@@ -333,7 +333,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			if output == "Connect":
 				msg ="Which devices would you like to connect to?"
 				title = "Connect"
-				choices = [] # Rasmus
 				if len(lines)>4:
 					choices = [lines[4]]
 				if len(lines)>6:
@@ -372,9 +371,9 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				print("hey5")
 				#få vist graf med HRV
 		
-	
+			
 			#sq.close()
-			return
+			
 	
 	hr_ctl_handle = None
 	retry = True
@@ -489,8 +488,11 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 			log.debug(res)
 			heart_data(res, first)
+			if startApp == True:
+				app.run_server(debug=True)
+				startApp = False
 			
-			plt.show()
+			
 			if sqlfile is None:
 				
 				log.info("Heart rate: " + str(res["hr"]))
@@ -533,7 +535,7 @@ def cli():
 		log.setLevel(logging.DEBUG)
 	else:
 		log.setLevel(logging.INFO)
-
+	
 	main(args.m, args.o, args.g, args.b, args.H, args.d)
 
 

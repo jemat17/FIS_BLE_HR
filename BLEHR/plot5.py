@@ -31,8 +31,8 @@ app.layout = html.Div(
 
 def update_graph_scatter(n):
     data_from_csv = pd.read_csv('data.csv')
-    X = data_from_csv['time'].values.tolist()
-    Y = data_from_csv['y'].values.tolist()
+    X = data_from_csv.iloc[:,0].values.tolist()
+    Y = data_from_csv.iloc[:,1].values.tolist()
 
     data = plotly.graph_objs.Scatter(
             x=list(X),
