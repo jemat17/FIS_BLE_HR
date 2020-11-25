@@ -174,7 +174,7 @@ def get_ble_hr_mac():
 		hci.logfile = open("mylog.txt", "wb")
 		try:
 			
-			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)						
+			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)		## Ikke nødvendig!				
 			hci.close()
 			
 		except pexpect.TIMEOUT:
@@ -213,6 +213,8 @@ def heart_data(res, first):
 				"HR": res["hr"]
 			}
 			csv_writer.writerow(data)
+
+
 # Lets plot this shit!
 X = deque(maxlen=100)
 X.append(0)
@@ -308,16 +310,14 @@ def gui(lines):
 		msg ="Which devices would you like to connect to?"
 		title = "Connect"
 		choices = [device[0],device[1]]
-
 		choice = eg.choicebox(msg, title, choices)
-
 		choice = choicebox(msg, title, choices)
 		return device[0]
 
 	
 	if output == "Show HR grapf":
 		print("hey")
-		#få vist graf med HR
+		app.run_server(debug=True) #få vist graf med HR
 	
 	if output == "Show HRV grapf":
 		print("hey")
