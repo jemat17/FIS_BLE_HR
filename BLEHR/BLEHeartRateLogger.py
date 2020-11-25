@@ -311,7 +311,7 @@ def gui(lines):
 		title = "Connect"
 		choices = [device[0],device[1]]
 		choice = eg.choicebox(msg, title, choices)
-		choice = choicebox(msg, title, choices)
+		choice = choicebox(msg, title, choices) # Hvorfor den her? To gange i træk??
 		return device[0]
 
 	
