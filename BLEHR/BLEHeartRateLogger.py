@@ -31,6 +31,17 @@ import easygui as eg
 import pyautogui
 from matplotlib import pyplot as plt
 import re
+import dash
+from dash.dependencies import Output, Input
+import dash_core_components as dcc
+import dash_html_components as html
+import plotly
+import random
+import plotly.graph_objs as go
+from collections import deque
+
+
+
 
 data=["time"]
 
@@ -165,8 +176,10 @@ def get_ble_hr_mac():
 		hci.logfile = open("mylog.txt", "wb")
 		try:
 			
-			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)						
+			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)		## Ikke nødvendig!				
 			hci.close()
+			break
+
 			
 		except pexpect.TIMEOUT:
 			return None
@@ -176,134 +189,85 @@ def get_ble_hr_mac():
 		except KeyboardInterrupt:
 			log.info("Received keyboard interrupt. Quitting cleanly.")
 			hci.close()
-			return None
+			break
 
 	# We wait for the 'hcitool lescan' to finish
 	time.sleep(1)
-	return 
+	 
 
 data=[["time","y"]]
 t0=time.time()	
 
 def heart_data(res, first):
-	filename="data"	
-	if first is False: 
-		first = True
-		fieldnames = ["time", "HR"]
-		with open(filename + '.csv', 'w') as csv_file:
-			csv_writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
-			csv_writer.writeheader
-
-	while True:
-
-		with open('data.csv', 'a') as csv_file:
-			csv_writer = csv.DictWriter(csv_file, fieldnames)
-
-			data = {
-				"time": time.time()-t0,
-				"HR": res["hr"]
-			}
-			csv_writer.writerow(data)
-
 	
-	tQ=0.5				## Sampling tiime in seconds
-	
-		## We use this time also in the filename, so that our program saves a unique filename
-	data_heart = str(res["hr"])
-		
-	
-	# 			## By adding this time.sleep for .01 s we make so that our sampling will be approx 1/.01=100 Hz	
-	# data.append([time.time()-t0,data_heart])	## data is a list containing our trajectory. We add a list of three elements at each cycle
-	# #time.sleep(tQ)
-	# ## Saving our data in the .csv file
-	# with open(filename+".csv","w") as my_file:
-	# 	my_file = open(filename+".csv","w") 
-	# 	my_writer=csv.writer(my_file)
-	# 	for each_row in data:
-	# 		my_writer.writerow(each_row)
-	# Måske tjekke rækker i data vs rækker i csv
-
-def plotData():
-	data = pd.read_csv('data.csv')
-	x = data["time"]
-	y1 = data["HR"]
-
-	plt.cla()
-
-	plt.plot(x, y1, label = 'HR')
-
-	plt.legend(loc = 'upper left')
-	plt.tight_layout()
+	#while True:
+	with open('data.csv', 'a') as csv_file:
+		csv_writer = csv.writer(csv_file)
+		data = [time.time()-t0, res["hr"]]
+		csv_writer.writerow(data)
 
 
+# Lets plot this shit!
+X = deque(maxlen=100)
+X.append(0)
+Y = deque(maxlen=100)
+Y.append(0)
+
+app = dash.Dash(__name__)
+
+app.layout = html.Div(
+    [
+        dcc.Graph(id='live-graph', animate=True),
+        dcc.Interval(
+            id='graph-update',
+            interval=1000,
+            n_intervals = 0
+        ),
+    ]
+)
+
+app = dash.Dash(__name__)
+
+app.layout = html.Div(
+    [
+        dcc.Graph(id='live-graph', animate=True),
+        dcc.Interval(
+            id='graph-update',
+            interval=1000,
+            n_intervals = 0
+        ),
+    ]
+)
+
+@app.callback(Output('live-graph', 'figure'),
+            [Input('graph-update', 'n_intervals')])
+
+def update_graph_scatter(n):
+    data_from_csv = pd.read_csv('data.csv')
+    X = data_from_csv.iloc[:,0].values.tolist()
+    Y = data_from_csv.iloc[:,1].values.tolist()
+
+    data = plotly.graph_objs.Scatter(
+            x=list(X),
+            y=list(Y),
+            name='Scatter',
+            mode= 'lines+markers'
+            )
+
+    return {'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
+                                                yaxis=dict(range=[min(Y),max(Y)]))}
 
 
-
-def gui(lines):
-  
-	device=[["addr","name"]]
-	# message to be displayed  
-	text = "Welcome to the Heart Rate monitoring program"
-  
-	# window title 
-	title = "HR monitor"
-  
-	# button list 
-	button_list = [] 
-  
-	# button 1 
-	button1 = "Connect"
-  
-	# second button 
-	button2 = "Show HR grapf"
-  
-	# third button 
-	button3 = "Show HRV grapf"
-  
-	# appending button to the button list 
-	button_list.append(button1) 
-	button_list.append(button2) 
-	button_list.append(button3) 
-  
-  
-	# creating a button box 
-	output = eg.buttonbox(text, title, button_list) 
-  
-	# printing the button pressed by the user 
-	print("User selected option : ", end = " ") 
-	print(output) 
-
-
-	device.append([2,5]) # har skal indsættes navn og adresse fra forskellige devices
-
-	if output == "Connect":
-		msg ="Which devices would you like to connect to?"
-		title = "Connect"
-		choices = [device[0],device[1]]
-
-		choice = eg.choicebox(msg, title, choices)
-
-		choice = choicebox(msg, title, choices)
-		return device[0]
-
-	
-	if output == "Show HR grapf":
-		print("hey")
-		#få vist graf med HR
-	
-	if output == "Show HRV grapf":
-		print("hey")
-		#få vist graf med HRV
-		
-	#device.append([,]) # har skal indsættes data fra forskellige devices
-
+## Slut plot
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
 	"""
 	main routine to which orchestrates everything
 	"""
-	first = False
+	if addr is None:
+		first = False
+		startApp = True
 	
 	if sqlfile is not None:
 		# Init database connection
@@ -314,7 +278,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 	if addr is None:
 		# In case no address has been provided, we scan to find any BLE devices
-		addr = get_ble_hr_mac()
+		get_ble_hr_mac()
 		
 		with open("mylog.txt", "r") as mylogs:
 				lines = []
@@ -325,80 +289,90 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 							lines.append(item)
 				log.info(len(lines))
 		if addr == None:
+			
+			gui = True
+			while gui: 
 	# message to be displayed  
-			text = "Welcome to the Heart Rate monitoring program"
+				
+				text = "Welcome to the Heart Rate monitoring program"
   
 	# window title 
-			title = "HR monitor"
+				title = "HR monitor"
   
 	# button list 
-			button_list = [] 
+				button_list = [] 
   
 	# button 1 
-			button1 = "Connect"
+				button1 = "Connect"
   
 	# second button 
-			button2 = "Show HR grapf"
+				button2 = "Show HR graph"
   
 	# third button 
-			button3 = "Show HRV grapf"
+				button3 = "Show HRV graph"
   
 	# appending button to the button list 
-			button_list.append(button1) 
-			button_list.append(button2) 
-			button_list.append(button3) 
+				button_list.append(button1) 
+				button_list.append(button2) 
+				button_list.append(button3) 
   
   
 	# creating a button box 
-			output = eg.buttonbox(text, title, button_list) 
+				output = eg.buttonbox(text, title, button_list) 
   
 	# printing the button pressed by the user 
-			print("User selected option : ", end = " ") 
-			print(output) 
+				print("User selected option : ", end = " ") 
+				print(output) 
 
 
-			if output == "Connect":
-				msg ="Which devices would you like to connect to?"
-				title = "Connect"
-				if len(lines)>4:
-					choices = [lines[4]]
-				if len(lines)>6:
-					choices = [lines[4], lines[6]]
-				if len(lines)>8:
-					choices = [lines[4], lines[6],lines[8]]
-
-				choice = eg.choicebox(msg, title, choices)
-				
-				if len(lines)>4:
-					if choice == lines[4]:
-						addr = lines[3]
-				
-				if len(lines)>6:
-					if choice == lines[4]:
-						addr = lines[3]	
-					if choice == lines[6]:
-						addr = lines[5]
-						
-				if len(lines)>8:
-					if choice == lines[4]:
-						addr = lines[3]	
-					if choice == lines[6]:
-						addr = lines[5]
-					if choice == lines[8]:
-						addr = lines[7]
-				
-				
-			if output == "Show HR grapf":
-				print("hey3")
-				#få vist graf med HR
+				if output == "Connect":
+					
+					msg ="Which devices would you like to connect to?"
+					title = "Connect"
+					if len(lines)>4:
+						choices = [lines[4]]
+					if len(lines)>6:
+						choices = [lines[4], lines[6]]
+					if len(lines)>8:
+						choices = [lines[4], lines[6],lines[8]]
 	
-			if output == "Show HRV grapf":
-				print("hey5")
+					choice = eg.choicebox(msg, title, choices)
+					
+					if len(lines)>4:
+						if choice == lines[4]:
+							addr = lines[3]
+				
+					if len(lines)>6:
+						if choice == lines[4]:
+							addr = lines[3]	
+						if choice == lines[6]:
+							addr = lines[5]
+						
+					if len(lines)>8:
+						if choice == lines[4]:
+							addr = lines[3]	
+						if choice == lines[6]:
+							addr = lines[5]
+						if choice == lines[8]:
+							addr = lines[7]
+					
+				
+				if output == "Show HR graph":
+					print("hey3")
+					if addr is not None:
+						print ("hej")
+						#app.run_server(debug=True)  #få vist graf med HR
+					else:
+						print("Please connect")
+					gui = False
+				if output == "Show HRV graph":
+					print("hey5")
+					gui = False
 				#få vist graf med HRV
 		
-	
+			
 			#sq.close()
-			return
+			
 	
 	hr_ctl_handle = None
 	retry = True
@@ -513,8 +487,11 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 			log.debug(res)
 			heart_data(res, first)
-			ani = FuncAnimation(plt.gct(), plotData, interval = 1000)
-			plt.show()
+			# if startApp == True:
+			# 	app.run_server(debug=True)
+			# 	startApp = False
+			
+			
 			if sqlfile is None:
 				
 				log.info("Heart rate: " + str(res["hr"]))
@@ -529,11 +506,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		sq.commit()
 		sq.close()
 
-	## Loads the .csv file that we just saved as a panda dataframe named dat
-	dat = pd.read_csv("data.csv")
-	myfigure=dat.plot.scatter(x="time",y="y").get_figure()
-	myfigure.savefig("data-sampling.png")
-	eg.msgbox(image="data-sampling.png")
 
 	
 	
@@ -549,6 +521,10 @@ def cli():
 	"""
 	Entry point for the command line interface
 	"""
+	with open('data.csv', 'w') as csv_file:
+		csv_writer = csv.writer(csv_file)
+		data = ['Time', 'HR']
+		csv_writer.writerow(data)
 
 
 	args = parse_args()
@@ -562,7 +538,7 @@ def cli():
 		log.setLevel(logging.DEBUG)
 	else:
 		log.setLevel(logging.INFO)
-
+	
 	main(args.m, args.o, args.g, args.b, args.H, args.d)
 
 
