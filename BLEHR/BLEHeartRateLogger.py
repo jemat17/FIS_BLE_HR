@@ -43,7 +43,7 @@ from collections import deque
 
 
 
-data=["time"]
+data=["time","y", "rr"]
 
 
 logging.basicConfig(format="%(asctime)-15s  %(message)s")
@@ -196,7 +196,7 @@ def get_ble_hr_mac():
 	time.sleep(1)
 	 
 
-data=[["time","y", "rr"]]
+data=["time","y", "rr"]
 t0=time.time()	
 
 def heart_data(res, first):
@@ -205,12 +205,12 @@ def heart_data(res, first):
 	if "rr" in res:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data = [time.time(), res["hr"], res["rr"]]
+			data = [time.time()-t0, res["hr"], res["rr"]]
 			csv_writer.writerow(data)
 	else:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data = [time.time(), res["hr"], -1]
+			data = [time.time()-t0, res["hr"], -1]
 			csv_writer.writerow(data)
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -282,7 +282,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				output = eg.buttonbox(text, title, button_list) 
   
 	# printing the button pressed by the user 
-				print("User selected option : ", end = " ") 
+				#print("User selected option : ", end = " ") 
 				print(output) 
 
 				if output == "Connect":
@@ -342,10 +342,10 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					gui = False
 				#få vist graf med HRV
 				pwd = os.getcwd()
-				ppwd = os.path.join(pwd,'/data')
+				ppwd = os.path.join(pwd,'data')
 				print(ppwd)
 				if output == "HR - not live":
-					series=eg.fileopenbox("Select a series file", title, '+/data', [["*.csv", "*.nybser", "Series File"]])
+					series=eg.fileopenbox("Select a series file", title, ppwd, [["*.csv", "*.nybser", "Series File"]])
 					gui=False
 		
 			
@@ -501,7 +501,7 @@ def cli():
 	"""
 	with open('data.csv', 'w') as csv_file:
 		csv_writer = csv.writer(csv_file)
-		data = ['Time', 'HR']
+		data = ['Time', 'HR', 'rr']
 		csv_writer.writerow(data)
 
 

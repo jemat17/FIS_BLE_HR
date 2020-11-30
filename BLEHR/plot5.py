@@ -19,7 +19,15 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div(
 	[
 		html.Div([ 
-				html.Div(dcc.Slider(id="select-range1", updatemode='drag',
+			    dcc.Dropdown(
+					id='my-dropdown',
+					options=[
+						{'label': 'Heart rate', 'value': 'HR'},
+						{'label': 'Heart rate variability', 'value': 'HRV'}
+					],
+					value='HR'
+				),
+				html.Div(dcc.Slider(id="select-range", updatemode='drag',
 									  marks={i * 10: str(i * 10) for i in range(0, 21)},
 									  min=0, max=100, value=0), className="row", style={"padding": 5})]), 
 
@@ -29,20 +37,26 @@ app.layout = html.Div(
 			interval=1000,
 			n_intervals = 0
 		),
-	]
+	]		
 )
 
 @app.callback(Output('live-graph', 'figure'),
 			[Input('graph-update', 'n_intervals'),
-			Input('select-range1', 'value')])
+			Input('select-range', 'value'),
+			Input('my-dropdown', 'value')])
 
 
-def update_graph_scatter(n, range1):
+def update_graph_scatter(n, range1, dropdown):
 	data_from_csv = pd.read_csv('data.csv')
-	rolling_mean1 = data_from_csv['HR'].rolling(window=range1).mean()
-	X = data_from_csv.iloc[:,0].values.tolist()
-	Y = data_from_csv.iloc[:,1].values.tolist()
-
+	if dropdown == 'HRV':
+		data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)')
+		rolling_mean1 = data_from_csv['rr'].rolling(window=range1).mean()
+		X = data_from_csv.iloc[:,0].values.tolist()
+		Y = data_from_csv.iloc[:,2].values.tolist()
+	else:
+		rolling_mean1 = data_from_csv['HR'].rolling(window=range1).mean()
+		X = data_from_csv.iloc[:,0].values.tolist()
+		Y = data_from_csv.iloc[:,1].values.tolist()
 
 	trace1 = go.Scatter(x=X, y=Y,
 						mode='lines', name='Live HR')
@@ -56,16 +70,16 @@ def update_graph_scatter(n, range1):
 	#         )
 	layout1 = go.Layout(title = 'Live BPM',
 						xaxis=dict(
-							title="time",
+							title="Time [sec]",
 							range=[min(X), max(X)],
 							linecolor="#BCCCDC",  # Sets color of X-axis line
-							showgrid=False  # Removes X-axis grid lines
+							showgrid=True  # Removes X-axis grid lines
 						),
 						yaxis=dict(
 							title="BPM",  
 							range=[min(Y), max(Y)],
 							linecolor="#BCCCDC",  # Sets color of Y-axis line
-							showgrid=False,  # Removes Y-axis grid lines    
+							showgrid=True ,  # Removes Y-axis grid lines    
 						)
 	)
 	figure = {'data': [trace1],
