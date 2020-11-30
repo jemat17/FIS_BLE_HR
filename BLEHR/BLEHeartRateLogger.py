@@ -195,17 +195,22 @@ def get_ble_hr_mac():
 	time.sleep(1)
 	 
 
-data=[["time","y"]]
+data=[["time","y", "rr"]]
 t0=time.time()	
 
 def heart_data(res, first):
 	
 	#while True:
-	with open('data.csv', 'a') as csv_file:
-		csv_writer = csv.writer(csv_file)
-		data = [time.time(), res["hr"]]
-		csv_writer.writerow(data)
-
+	if "rr" in res:
+		with open('data.csv', 'a') as csv_file:
+			csv_writer = csv.writer(csv_file)
+			data = [time.time(), res["hr"], res["rr"]]
+			csv_writer.writerow(data)
+	else:
+		with open('data.csv', 'a') as csv_file:
+			csv_writer = csv.writer(csv_file)
+			data = [time.time(), res["hr"], -1]
+			csv_writer.writerow(data)
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
 	"""
