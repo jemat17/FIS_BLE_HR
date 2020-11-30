@@ -40,6 +40,7 @@ import random
 import plotly.graph_objs as go
 from collections import deque
 import webbrowser
+import datetime
 
 
 
@@ -201,13 +202,19 @@ def get_ble_hr_mac():
 data=[["time","y"]]
 t0=time.time()	
 
-def heart_data(res, first):
+
+def heart_data(res, first,file_name2):
 	
 	#while True:
 	with open('data.csv', 'a') as csv_file:
 		csv_writer = csv.writer(csv_file)
 		data = [time.time(), res["hr"]]
 		csv_writer.writerow(data)
+	
+	#with open("./data",file_name2, 'w') as csv_file:
+	#	csv_writer = csv.writer(csv_file)
+	#	data2 = ['Timeeee', 'HR']
+	#	csv_writer.writerow(data2)
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -378,15 +385,21 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
 					print(filename_hr)
 					gui=False
-		
+				
+				
+				
 			
 			#sq.close()
 			
+	current_date_and_time = datetime.datetime.now()
+	current_date_and_time_string = str(current_date_and_time)
+	extension = ".csv"
+	file_name2 =  current_date_and_time_string + extension
+	print(file_name2)
 	
 	hr_ctl_handle = None
 	retry = True
 	while retry:
-
 		
 		if check_battery:
 			gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Returnere batteri niveau!
@@ -467,7 +480,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			res = interpret(list(data))  # Skal converteres til en list for at kunne læse eller se indholdet.
 
 			log.debug(res)
-			heart_data(res, first)
+			heart_data(res, first,file_name2)
 			# if startApp == True:
 			# 	app.run_server(debug=True)
 			# 	startApp = False
