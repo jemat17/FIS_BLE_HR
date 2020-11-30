@@ -39,6 +39,8 @@ import plotly
 import random
 import plotly.graph_objs as go
 from collections import deque
+import webbrowser
+
 
 
 
@@ -234,11 +236,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 						stripped_line = line.strip()
 						line_list = stripped_line.split()
 						lines.append(line_list)
-					print(lines)
-						#split_list.append(line)
-					#for item in split_list:
-						#for line in mylogs: 
-					#	lines.append(item)
 								
 				log.info(len(lines))
 		if addr == None:
@@ -324,10 +321,47 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 						if line_choice == lines[3][0]:
 							addr = lines[3][0]
 
+
+					retry = True
+					while retry:
+
+						while 1:
+							log.info("Establishing connection to " + addr)
+							gt = pexpect.spawn(gatttool + " -b " + addr + " -t random --interactive")
+							if debug_gatttool:
+								gt.logfile = sys.stdout
+
+							gt.expect(r"\[LE\]>")
+							gt.sendline("connect")
+
+							try:
+								i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30) # Tid i secunder
+								if i == 0:
+									gt.expect(r"\[LE\]>", timeout=30)
+
+							except pexpect.TIMEOUT:
+								log.info("Connection timeout. Retrying.")
+								continue
+
+							except KeyboardInterrupt:
+								log.info("Received keyboard interrupt. Quitting cleanly.")
+								retry = False
+								break
+							break
+
+						if not retry:
+							break
+
+						log.info("Connected to " + addr)
+						
+						retry = False
+
+
 				if output == "Show HR graph":
 					print("hey3")
 					if addr is not None:
 						print ("hej")
+						webbrowser.open('http://127.0.0.1:8050/')
 						#app.run_server(debug=True)  #få vist graf med HR
 					else:
 						print("Please connect")
@@ -336,11 +370,13 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					print("hey5")
 					gui = False
 				#få vist graf med HRV
+				
 				pwd = os.getcwd()
-				ppwd = os.path.join(pwd,'/data')
+				ppwd = os.path.join(pwd,'data')
 				print(ppwd)
 				if output == "HR - not live":
-					series=eg.fileopenbox("Select a series file", title, '+/data', [["*.csv", "*.nybser", "Series File"]])
+					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
+					print(filename_hr)
 					gui=False
 		
 			
@@ -351,35 +387,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	retry = True
 	while retry:
 
-		while 1:
-			log.info("Establishing connection to " + addr)
-			gt = pexpect.spawn(gatttool + " -b " + addr + " -t random --interactive")
-			if debug_gatttool:
-				gt.logfile = sys.stdout
-
-			gt.expect(r"\[LE\]>")
-			gt.sendline("connect")
-
-			try:
-				i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30) # Tid i secunder
-				if i == 0:
-					gt.expect(r"\[LE\]>", timeout=30)
-
-			except pexpect.TIMEOUT:
-				log.info("Connection timeout. Retrying.")
-				continue
-
-			except KeyboardInterrupt:
-				log.info("Received keyboard interrupt. Quitting cleanly.")
-				retry = False
-				break
-			break
-
-		if not retry:
-			break
-
-		log.info("Connected to " + addr)
-
+		
 		if check_battery:
 			gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Returnere batteri niveau!
 			try:
@@ -478,8 +486,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		# We close the database properly
 		sq.commit()
 		sq.close()
-
-
 	
 	
 	# We quit close the BLE connection properly

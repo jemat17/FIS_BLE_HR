@@ -1,6 +1,39 @@
 BLEHeartRateLogger.py
 =====================
 
+SKAL LAVES:
+
+HR-LIVE: (JEPPE)
+- Grid
+- y-akse i højre side
+- tidsakse
+
+HR (Jacob)
+- ændring i navngivning af nye filer 
+- lav kopi af data.csv
+- lav graf til 
+
+HRV (Jeppe)
+- udregn HRV
+
+BLE (Rasmus)
+- åbne link ved klik på lave knap! 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 BLEHeartRateLogger.py is a Bluetooth Low-Energy (BLE) Heart Rate Monitor (HRM) data logger written in Python for Linux. With this tool you can log your heart rate and heart rate variability (RR) during exercise, sleep or whatever comes to mind.
 
 Communication with the BLE HRM is established using `hcitool` and `gatttool`. The output of those tools is then parsed and saved to an sqlite database.
