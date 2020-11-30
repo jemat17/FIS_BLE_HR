@@ -41,8 +41,7 @@ app.layout = html.Div([
 
 @app.callback(
     dash.dependencies.Output('graphs','children'),
-    [dash.dependencies.Input('data', 'value')],
-    events=[dash.dependencies.Event('graph-update', 'interval')]
+    [dash.dependencies.Input('data', 'value')]
     )
 
 

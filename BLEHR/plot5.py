@@ -13,35 +13,68 @@ X.append(0)
 Y = deque(maxlen=100)
 Y.append(0)
 
-app = dash.Dash(__name__)
+external_stylesheets =['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(
-    [
-        dcc.Graph(id='live-graph', animate=True),
-        dcc.Interval(
-            id='graph-update',
-            interval=1000,
-            n_intervals = 0
-        ),
-    ]
+	[
+		html.Div([ 
+				html.Div(dcc.Slider(id="select-range1", updatemode='drag',
+									  marks={i * 10: str(i * 10) for i in range(0, 21)},
+									  min=0, max=100, value=0), className="row", style={"padding": 5})]), 
+
+		dcc.Graph(id='live-graph', animate=True),
+		dcc.Interval(
+			id='graph-update',
+			interval=1000,
+			n_intervals = 0
+		),
+	]
 )
 
 @app.callback(Output('live-graph', 'figure'),
-            [Input('graph-update', 'n_intervals')])
+			[Input('graph-update', 'n_intervals'),
+			Input('select-range1', 'value')])
 
-def update_graph_scatter(n):
-    data_from_csv = pd.read_csv('data.csv')
-    X = data_from_csv.iloc[:,0].values.tolist()
-    Y = data_from_csv.iloc[:,1].values.tolist()
 
-    data = plotly.graph_objs.Scatter(
-            x=list(X),
-            y=list(Y),
-            name='Scatter',
-            mode= 'lines+markers'
-            )
+def update_graph_scatter(n, range1):
+	data_from_csv = pd.read_csv('data.csv')
+	rolling_mean1 = data_from_csv['HR'].rolling(window=range1).mean()
+	X = data_from_csv.iloc[:,0].values.tolist()
+	Y = data_from_csv.iloc[:,1].values.tolist()
 
-    return {'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
-                                                yaxis=dict(range=[min(Y),max(Y)]))}
+
+	trace1 = go.Scatter(x=X, y=Y,
+						mode='lines', name='Live HR')
+	trace_a = go.Scatter(x=X, y=rolling_mean1, mode='lines', yaxis='y', name=f'HR {range1}')
+
+	# data = plotly.graph_objs.Scatter(
+	#         x=list(X),
+	#         y=list(Y),
+	#         name='Scatter',
+	#         mode= 'lines+markers'
+	#         )
+	layout1 = go.Layout(title = 'Live BPM',
+						xaxis=dict(
+							title="time",
+							range=[min(X), max(X)],
+							linecolor="#BCCCDC",  # Sets color of X-axis line
+							showgrid=False  # Removes X-axis grid lines
+						),
+						yaxis=dict(
+							title="BPM",  
+							range=[min(Y), max(Y)],
+							linecolor="#BCCCDC",  # Sets color of Y-axis line
+							showgrid=False,  # Removes Y-axis grid lines    
+						)
+	)
+	figure = {'data': [trace1],
+				'layout': layout1
+				}
+	figure['data'].append(trace_a)
+
+	return figure #{'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
+	#                                            yaxis=dict(range=[min(Y),max(Y)]))}
+
 if __name__ == '__main__':
-    app.run_server(debug=True) 
+	app.run_server(debug=True) 

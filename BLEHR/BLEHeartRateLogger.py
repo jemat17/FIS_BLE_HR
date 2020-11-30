@@ -204,62 +204,8 @@ def heart_data(res, first):
 	#while True:
 	with open('data.csv', 'a') as csv_file:
 		csv_writer = csv.writer(csv_file)
-		data = [time.time()-t0, res["hr"]]
+		data = [time.time(), res["hr"]]
 		csv_writer.writerow(data)
-
-
-# Lets plot this shit!
-X = deque(maxlen=100)
-X.append(0)
-Y = deque(maxlen=100)
-Y.append(0)
-
-app = dash.Dash(__name__)
-
-app.layout = html.Div(
-    [
-        dcc.Graph(id='live-graph', animate=True),
-        dcc.Interval(
-            id='graph-update',
-            interval=1000,
-            n_intervals = 0
-        ),
-    ]
-)
-
-app = dash.Dash(__name__)
-
-app.layout = html.Div(
-    [
-        dcc.Graph(id='live-graph', animate=True),
-        dcc.Interval(
-            id='graph-update',
-            interval=1000,
-            n_intervals = 0
-        ),
-    ]
-)
-
-@app.callback(Output('live-graph', 'figure'),
-            [Input('graph-update', 'n_intervals')])
-
-def update_graph_scatter(n):
-    data_from_csv = pd.read_csv('data.csv')
-    X = data_from_csv.iloc[:,0].values.tolist()
-    Y = data_from_csv.iloc[:,1].values.tolist()
-
-    data = plotly.graph_objs.Scatter(
-            x=list(X),
-            y=list(Y),
-            name='Scatter',
-            mode= 'lines+markers'
-            )
-
-    return {'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
-                                                yaxis=dict(range=[min(Y),max(Y)]))}
-
-
-## Slut plot
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -268,7 +214,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	"""
 	if addr is None:
 		first = False
-		startApp = True
 	
 	if sqlfile is not None:
 		# Init database connection
