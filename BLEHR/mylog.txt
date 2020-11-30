@@ -1,10 +1,13 @@
 LE Scan ...
-69:D3:AE:E4:4B:E4 (unknown)
-69:D3:AE:E4:4B:E4 (unknown)
-17:8B:05:1C:68:55 (unknown)
-45:A3:50:16:83:4A (unknown)
-45:A3:50:16:83:4A (unknown)
-74:0E:C4:A6:3E:39 (unknown)
-74:0E:C4:A6:3E:39 (unknown)
-1A:92:33:F1:91:9E (unknown)
-C8:69:CD:84:CC:F1 (unknown)
+76:83:B9:0F:F9:1B (unknown)
+76:83:B9:0F:F9:1B (unknown)
+D9:67:9A:AC:42:EB WHOOP 3A214456
+D9:67:9A:AC:42:EB (unknown)
+4F:35:3E:B9:47:F2 (unknown)
+4D:65:91:E9:4C:D7 (unknown)
+4D:65:91:E9:4C:D7 (unknown)
+2A:20:10:C7:31:57 (unknown)
+E5:DF:48:25:BC:1C (unknown)
+E5:DF:48:25:BC:1C fenix 5
+7E:F8:41:26:70:76 (unknown)
+3A:76:F3:16:72:84 (unknown)

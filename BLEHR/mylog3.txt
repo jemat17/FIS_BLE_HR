@@ -10,4 +10,3 @@ LE Scan ...
 6D:A1:67:89:6B:31 (unknown)
 10:4E:FC:BA:92:5D (unknown)
 10:4E:FC:BA:44:5D HRM-DUDE
-
