@@ -174,9 +174,10 @@ def get_ble_hr_mac():
 		log.info("Trying to find a BLE device")
 		hci = pexpect.spawn("hcitool lescan, encoding='utf-8'") 
 		hci.logfile = open("mylog.txt", "wb")
+		time.sleep(5)
 		try:
 			
-			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=5)		## Ikke nødvendig!				
+			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=10)		## Ikke nødvendig!				
 			hci.close()
 			break
 
@@ -232,11 +233,18 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		
 		with open("mylog.txt", "r") as mylogs:
 				lines = []
+			
 				for line in mylogs:
 					if "(unknown)" not in line: #husk at tilføje NOT 
-						split_list=line.split()
-						for item in split_list:
-							lines.append(item)
+						stripped_line = line.strip()
+						line_list = stripped_line.split()
+						lines.append(line_list)
+					print(lines)
+						#split_list.append(line)
+					#for item in split_list:
+						#for line in mylogs: 
+					#	lines.append(item)
+								
 				log.info(len(lines))
 		if addr == None:
 			
@@ -260,11 +268,14 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
   
 	# third button 
 				button3 = "Show HRV graph"
+				
+				button4 = "HR - not live"
   
 	# appending button to the button list 
 				button_list.append(button1) 
 				button_list.append(button2) 
 				button_list.append(button3) 
+				button_list.append(button4) 
   
   
 	# creating a button box 
@@ -274,39 +285,50 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				print("User selected option : ", end = " ") 
 				print(output) 
 
-
 				if output == "Connect":
 					
 					msg ="Which devices would you like to connect to?"
 					title = "Connect"
-					if len(lines)>4:
-						choices = [lines[4]]
-					if len(lines)>6:
-						choices = [lines[4], lines[6]]
-					if len(lines)>8:
-						choices = [lines[4], lines[6],lines[8]]
+					if len(lines)==2:
+						choices = [lines[1]]
+					if len(lines)==3:
+						choices = [lines[1], lines[2]]
+					if len(lines)==4:
+						choices = [lines[1], lines[2],lines[3]]
+						#print(choices)
 	
 					choice = eg.choicebox(msg, title, choices)
 					
-					if len(lines)>4:
-						if choice == lines[4]:
-							addr = lines[3]
-				
-					if len(lines)>6:
-						if choice == lines[4]:
-							addr = lines[3]	
-						if choice == lines[6]:
-							addr = lines[5]
-						
-					if len(lines)>8:
-						if choice == lines[4]:
-							addr = lines[3]	
-						if choice == lines[6]:
-							addr = lines[5]
-						if choice == lines[8]:
-							addr = lines[7]
+					s=choice
+					s1=s.replace("'","")
+					s2=s1.replace(",","")
+					s3=s2.replace("[","")
+					s4=s3.replace("]","")
+
+					line_choice = []
+					line_choice = s4.split()
 					
+					if len(lines)==2:
+						if line_choice[0] == lines[1][0]:
+							addr = lines[1][0]
 				
+					if len(lines)==3:
+						if line_choice[0] == lines[1][0]:
+							addr = lines[1][0]
+						if line_choice[0] == lines[1][0]:
+							addr = lines[1][0]	
+						if line_choice[0] == lines[2][0]:
+							addr = lines[2][0]
+						
+					if len(lines)==4:
+						print("DAV")
+						if line_choice[0] == lines[1][0]:
+							addr = lines[1][0]	
+						if line_choice[0] == lines[2][0]:
+							addr = lines[2][0]
+						if line_choice == lines[3][0]:
+							addr = lines[3][0]
+
 				if output == "Show HR graph":
 					print("hey3")
 					if addr is not None:
@@ -319,6 +341,12 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					print("hey5")
 					gui = False
 				#få vist graf med HRV
+				pwd = os.getcwd()
+				ppwd = os.path.join(pwd,'/data')
+				print(ppwd)
+				if output == "HR - not live":
+					series=eg.fileopenbox("Select a series file", title, '+/data', [["*.csv", "*.nybser", "Series File"]])
+					gui=False
 		
 			
 			#sq.close()

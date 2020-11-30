@@ -1,8 +1,0 @@
-LE Scan ...
-76:83:B9:0F:F9:1B (unknown)
-7E:F8:41:26:70:76 (unknown)
-4D:65:91:E9:4C:D7 (unknown)
-4D:65:91:E9:4C:D7 (unknown)
-4F:35:3E:B9:47:F2 (unknown)
-7E:F8:41:26:70:76 (unknown)
-D9:67:9A:AC:42:EB WHOOP 3A214456
