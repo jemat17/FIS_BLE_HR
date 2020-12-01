@@ -218,11 +218,6 @@ def heart_data(res, first,file_name):
 			data = [time.time()-t0, res["hr"], -1]
 			csv_writer.writerow(data)
 
-	with open('data.csv', 'a') as csv_file:
-		csv_writer = csv.writer(csv_file)
-		data = [time.time(), res["hr"]]
-		csv_writer.writerow(data)
-
 	
 	with open(file_name+".csv",'a') as csv_file:
 		csv_writer = csv.writer(csv_file)
