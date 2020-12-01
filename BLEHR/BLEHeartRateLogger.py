@@ -371,11 +371,8 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 
 				if output == "Show HR graph":
-					print("hey3")
 					if addr is not None:
-						print ("hej")
 						webbrowser.open('http://127.0.0.1:8050/')
-						#app.run_server(debug=True)  #få vist graf med HR
 					else:
 						print("Please connect")
 					gui = False
@@ -474,7 +471,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					
 		with open(file_name+".csv","w") as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = ['Time', 'HR', 'RR']
+			data2 = ['Time', 'HR', 'RR', 'HRV']
 			csv_writer.writerow(data2)
 
 
@@ -577,7 +574,7 @@ def cli():
 	
 	with open('data.csv', 'w') as csv_file:
 		csv_writer = csv.writer(csv_file)
-		data = ['Time', 'HR', 'rr']
+		data = ['Time', 'HR', 'rr', 'HRV']
 		csv_writer.writerow(data)
 
 
