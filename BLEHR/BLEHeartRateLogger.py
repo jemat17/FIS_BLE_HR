@@ -226,7 +226,7 @@ def heart_data(res, first,file_name):
 	
 	with open(file_name+".csv",'a') as csv_file:
 		csv_writer = csv.writer(csv_file)
-		data2 = [time.time(), res["hr"]]
+		data2 = [time.time()-t0, res["hr"]]
 		csv_writer.writerow(data2)
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -398,15 +398,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
 					print(filename_hr)
 					
-					current_date_and_time = datetime.datetime.now()
-					current_date_and_time_string = str(current_date_and_time)
-					file_name = "data/data-"+current_date_and_time_string
-					
-					with open(file_name+".csv","w") as csv_file:
-						csv_writer = csv.writer(csv_file)
-						data2 = ['Time', 'HR']
-						csv_writer.writerow(data2)
-					
 					gui=False		
 			
 	#sq.close()
@@ -456,6 +447,16 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		period = 1.
 		last_measure = time.time() - period
 		hr_expect = "Notification handle = " + hr_handle + " value: ([0-9a-f ]+)"
+
+		current_date_and_time = datetime.datetime.now()
+		current_date_and_time_string = str(current_date_and_time)
+		file_name = "data/data-"+current_date_and_time_string
+					
+		with open(file_name+".csv","w") as csv_file:
+			csv_writer = csv.writer(csv_file)
+			data2 = ['Time', 'HR']
+			csv_writer.writerow(data2)
+
 
 		while 1:
 			try:
