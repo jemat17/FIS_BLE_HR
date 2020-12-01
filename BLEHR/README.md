@@ -3,10 +3,6 @@ BLEHeartRateLogger.py
 
 SKAL LAVES:
 
-HR-LIVE: (JEPPE)
-- Grid
-- y-akse i højre side
-- tidsakse
 
 HR (Jacob)
 - ændring i navngivning af nye filer 
@@ -14,7 +10,7 @@ HR (Jacob)
 - lav graf til 
 
 HRV (Jeppe)
-- udregn HRV
+- udregn HRV - Skal HRV være ABS??
 
 BLE (Rasmus)
 - åbne link ved klik på lave knap! 
