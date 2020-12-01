@@ -49,10 +49,13 @@ app.layout = html.Div(
 def update_graph_scatter(n, range1, dropdown):
 	data_from_csv = pd.read_csv('data.csv')
 	if dropdown == 'HRV':
-		data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)')
-		rolling_mean1 = data_from_csv['rr'].rolling(window=range1).mean()
-		X = data_from_csv.iloc[:,0].values.tolist()
-		Y = data_from_csv.iloc[:,2].values.tolist()
+		if len(data_from_csv) > 2:
+			data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)')
+			data_from_csv['rr'] = pd.to_numeric(data_from_csv['rr'])
+			data_from_csv.iloc[-1,2] = data_from_csv.iloc[-1,2] - data_from_csv.iloc[-2,2]
+			rolling_mean1 = data_from_csv['rr'].rolling(window=range1).mean()
+			X = data_from_csv.iloc[:,0].values.tolist()
+			Y = data_from_csv.iloc[:,2].values.tolist()
 	else:
 		rolling_mean1 = data_from_csv['HR'].rolling(window=range1).mean()
 		X = data_from_csv.iloc[:,0].values.tolist()

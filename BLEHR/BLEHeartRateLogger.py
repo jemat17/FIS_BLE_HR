@@ -180,7 +180,7 @@ def get_ble_hr_mac():
 		time.sleep(5)
 		try:
 			
-			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=10)		## Ikke nødvendig!				
+			hci.expect("(([0-9A-F]{2}[:-]){5}([0-9A-F]{2})) ([a-zA-Z0-9]+\s[a-zA-z0-9]+)", timeout=10)						
 			hci.close()
 			break
 
@@ -201,37 +201,34 @@ def get_ble_hr_mac():
 
 data=["time","y", "rr"]
 t0=time.time()	
-varOld = 0
+
 
 def heart_data(res, first,file_name):
 	
-	#while True:
+	if first:
+		varOld = 0
 
 	if "rr" in res:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			var = res["rr"] - varOld
-			data = [time.time()-t0, res["hr"], var
+
+			data = [time.time()-t0, res["hr"], res["rr"]]
 			csv_writer.writerow(data)
-			varOld = res["rr"]
 	else:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data = [time.time()-t0, res["hr"], -1]
+			data = [time.time()-t0, res["hr"], 0]
 			csv_writer.writerow(data)
+			
 
-	
-	with open(file_name+".csv",'a') as csv_file:
-		csv_writer = csv.writer(csv_file)
-		data2 = [time.time()-t0, res["hr"]]
-		csv_writer.writerow(data2)
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
 	"""
 	main routine to which orchestrates everything
 	"""
+	
 	if addr is None:
-		first = False
+		first = True
 	
 	if sqlfile is not None:
 		# Init database connection
@@ -382,26 +379,52 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					else:
 						print("Please connect")
 					gui = False
-				if output == "Show HRV graph":
-					print("hey5")
-					gui = False
-				#få vist graf med HRV
 				
 				pwd = os.getcwd()
 				ppwd = os.path.join(pwd,'data')
-				print(ppwd)
-				if output == "HR - not live":
-					series=eg.fileopenbox("Select a series file", title, ppwd, [["*.csv", "*.nybser", "Series File"]])
-					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
-					print(filename_hr)
+				
+				if output == "Show HRV graph":
 					
+					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
+					data= pd.read_csv(filename_hr)
+
+					x=data['RR']
+
+					fig = plt.figure()
+					ax =fig.add_subplot(111)
+					ax.set_xlabel('Time')
+					ax.set_ylabel('RR-intervel')
+					ax.plot(x,c='r',label='Your RR-interval')
+					leg=ax.legend()
+					plt.show()
+					
+					gui = False
+				
+
+				if output == "HR - not live":
+					
+					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
+					data= pd.read_csv(filename_hr)
+
+					x=data['HR']
+
+					fig = plt.figure()
+					ax =fig.add_subplot(111)
+					ax.set_xlabel('Time')
+					ax.set_ylabel('Heart Rate')
+					ax.plot(x,c='r',label='Your heart rate')
+					leg=ax.legend()
+					plt.show()
+							
 					gui=False		
 			
 	#sq.close()
 	hr_ctl_handle = None
 	retry = True
-	while retry:
-		
+	
+	while retry:	
+		#while 1:
+		#	a=2 #RANDOM
 		if check_battery:
 			gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Returnere batteri niveau!
 			try:
@@ -451,7 +474,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					
 		with open(file_name+".csv","w") as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = ['Time', 'HR']
+			data2 = ['Time', 'HR', 'RR']
 			csv_writer.writerow(data2)
 
 
@@ -463,6 +486,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				# If the timer expires, it means that we have lost the
 				# connection with the HR monitor
 				log.warning("Connection lost with " + addr + ". Reconnecting.")
+
 				if sqlfile is not None:
 					sq.commit()
 				gt.sendline("quit")
@@ -471,8 +495,33 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				except:
 					pass
 				time.sleep(1)
-				break
+				
+				while 1:
+					log.info("Establishing connection to " + addr)
+					gt = pexpect.spawn(gatttool + " -b " + addr + " -t random --interactive")
+					if debug_gatttool:
+						gt.logfile = sys.stdout
+					
+					gt.expect(r"\[LE\]>")
+					gt.sendline("connect")
+				
+					try:
+						i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30)
+						if i == 0:
+							gt.expect(r"\[LE\]>", timeout=30)
+			
+					except pexpect.TIMEOUT:
+						log.info("Connection timeout. Retrying.")
+						continue
+		
+					except KeyboardInterrupt:
+						log.info("Received keyboard interrupt. Quitting cleanly.")
+						retry = False
+						break
+					break
 
+				log.info("Connected to " + addr)	
+				break
 			except KeyboardInterrupt:
 				log.info("Received keyboard interrupt. Quitting cleanly.")
 				retry = False
@@ -492,6 +541,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 			log.debug(res)
 			heart_data(res, first,file_name)
+			
 			# if startApp == True:
 			# 	app.run_server(debug=True)
 			# 	startApp = False
@@ -524,6 +574,7 @@ def cli():
 	"""
 	Entry point for the command line interface
 	"""
+	
 	with open('data.csv', 'w') as csv_file:
 		csv_writer = csv.writer(csv_file)
 		data = ['Time', 'HR', 'rr']
