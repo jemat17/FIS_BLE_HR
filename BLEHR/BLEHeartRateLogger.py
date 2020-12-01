@@ -199,27 +199,30 @@ def get_ble_hr_mac():
 	time.sleep(1)
 	 
 
-data=["time","y", "rr"]
+data=["time","y", "rr", 'HRV']
 t0=time.time()	
 
 
 def heart_data(res, first,file_name):
-	
-	if first:
-		varOld = 0
+	var = 0
+	data_from_csv = pd.read_csv('data.csv')
+	if len(data_from_csv) > 2:
+		data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)')
+		data_from_csv['rr'] = pd.to_numeric(data_from_csv['rr'])
+		var = (data_from_csv.iloc[-1,2] - data_from_csv.iloc[-2,2])
 
 	if "rr" in res:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-
-			data = [time.time()-t0, res["hr"], res["rr"]]
+			data = [time.time()-t0, res["hr"], res["rr"], var]
 			csv_writer.writerow(data)
 	else:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
 			data = [time.time()-t0, res["hr"], 0]
 			csv_writer.writerow(data)
-			
+	
+
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
@@ -371,8 +374,11 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 
 				if output == "Show HR graph":
+					print("hey3")
 					if addr is not None:
+						print ("hej")
 						webbrowser.open('http://127.0.0.1:8050/')
+						#app.run_server(debug=True)  #få vist graf med HR
 					else:
 						print("Please connect")
 					gui = False
@@ -471,7 +477,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					
 		with open(file_name+".csv","w") as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = ['Time', 'HR', 'RR', 'HRV']
+			data2 = ['Time', 'HR', 'RR']
 			csv_writer.writerow(data2)
 
 
