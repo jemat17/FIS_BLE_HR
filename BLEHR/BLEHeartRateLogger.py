@@ -217,12 +217,18 @@ def heart_data(res, first,file_name):
 			csv_writer = csv.writer(csv_file)
 			data = [time.time()-t0, res["hr"], -1]
 			csv_writer.writerow(data)
+			
+	if "rr" in res:
+		with open(file_name+".csv",'a') as csv_file:
+			csv_writer = csv.writer(csv_file)
+			data2 = [time.time()-t0, res["hr"], res["rr"]]
+			csv_writer.writerow(data2)
+	else:
+		with open(file_name+".csv",'a') as csv_file:
+			csv_writer = csv.writer(csv_file)
+			data2 = [time.time()-t0, res["hr"], -1]
+			csv_writer.writerow(data2)
 
-	
-	with open(file_name+".csv",'a') as csv_file:
-		csv_writer = csv.writer(csv_file)
-		data2 = [time.time()-t0, res["hr"]]
-		csv_writer.writerow(data2)
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
 	"""
@@ -380,26 +386,52 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					else:
 						print("Please connect")
 					gui = False
-				if output == "Show HRV graph":
-					print("hey5")
-					gui = False
-				#få vist graf med HRV
 				
 				pwd = os.getcwd()
 				ppwd = os.path.join(pwd,'data')
-				print(ppwd)
-				if output == "HR - not live":
-					series=eg.fileopenbox("Select a series file", title, ppwd, [["*.csv", "*.nybser", "Series File"]])
-					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
-					print(filename_hr)
+				
+				if output == "Show HRV graph":
 					
+					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
+					data= pd.read_csv(filename_hr)
+
+					x=data['RR']
+
+					fig = plt.figure()
+					ax =fig.add_subplot(111)
+					ax.set_xlabel('Time')
+					ax.set_ylabel('RR-intervel')
+					ax.plot(x,c='r',label='Your RR-interval')
+					leg=ax.legend()
+					plt.show()
+					
+					gui = False
+				
+
+				if output == "HR - not live":
+					
+					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
+					data= pd.read_csv(filename_hr)
+
+					x=data['HR']
+
+					fig = plt.figure()
+					ax =fig.add_subplot(111)
+					ax.set_xlabel('Time')
+					ax.set_ylabel('Heart Rate')
+					ax.plot(x,c='r',label='Your heart rate')
+					leg=ax.legend()
+					plt.show()
+							
 					gui=False		
 			
 	#sq.close()
 	hr_ctl_handle = None
 	retry = True
-	while retry:
-		
+	
+	while retry:	
+		#while 1:
+		#	a=2 #RANDOM
 		if check_battery:
 			gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Returnere batteri niveau!
 			try:
@@ -449,7 +481,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					
 		with open(file_name+".csv","w") as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = ['Time', 'HR']
+			data2 = ['Time', 'HR', 'RR']
 			csv_writer.writerow(data2)
 
 
@@ -461,6 +493,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				# If the timer expires, it means that we have lost the
 				# connection with the HR monitor
 				log.warn("Connection lost with " + addr + ". Reconnecting.")
+				
 				if sqlfile is not None:
 					sq.commit()
 				gt.sendline("quit")
@@ -470,6 +503,34 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					pass
 				time.sleep(1)
 				break
+				
+				while 1:
+					log.info("Establishing connection to " + addr)
+					gt = pexpect.spawn(gatttool + " -b " + addr + " -t random --interactive")
+					if debug_gatttool:
+						gt.logfile = sys.stdout
+						gt.expect(r"\[LE\]>")
+						gt.sendline("connect")
+				
+					try:
+						i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30)
+						if i == 0:
+							gt.expect(r"\[LE\]>", timeout=30)
+			
+					except pexpect.TIMEOUT:
+						log.info("Connection timeout. Retrying.")
+						continue
+		
+					except KeyboardInterrupt:
+						log.info("Received keyboard interrupt. Quitting cleanly.")
+						retry = False
+						break
+					break
+
+				if not retry:
+					break
+
+				log.info("Connected to " + addr)	
 
 			except KeyboardInterrupt:
 				log.info("Received keyboard interrupt. Quitting cleanly.")
