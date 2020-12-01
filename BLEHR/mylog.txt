@@ -1,4 +1,5 @@
 LE Scan ...
+<<<<<<< HEAD
 3F:59:75:DE:50:4C (unknown)
 C8:69:CD:84:CC:F1 (unknown)
 19:E1:B9:DF:0C:8A (unknown)
@@ -15,3 +16,15 @@ D9:67:9A:AC:42:EB (unknown)
 7C:64:56:84:6F:23 (unknown)
 21:51:2D:FF:1B:59 (unknown)
 5E:9E:9E:6D:74:C1 (unknown)
+=======
+D9:67:9A:AC:42:EB WHOOP 3A214456
+D9:67:9A:AC:42:EB (unknown)
+6A:4A:7C:55:DC:A0 (unknown)
+6A:4A:7C:55:DC:A0 (unknown)
+3F:59:75:DE:50:4C (unknown)
+21:51:2D:FF:1B:59 (unknown)
+57:56:96:37:00:67 (unknown)
+57:56:96:37:00:67 (unknown)
+6E:D0:0F:0D:D9:AC (unknown)
+6E:D0:0F:0D:D9:AC (unknown)
+>>>>>>> c74ece44420f524453f38ef85821da63ed5c1c01
