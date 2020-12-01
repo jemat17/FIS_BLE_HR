@@ -201,7 +201,7 @@ def get_ble_hr_mac():
 
 data=["time","y", "rr"]
 t0=time.time()	
-
+varOld = 0
 
 def heart_data(res, first,file_name):
 	
@@ -210,8 +210,10 @@ def heart_data(res, first,file_name):
 	if "rr" in res:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data = [time.time()-t0, res["hr"], res["rr"]]
+			var = res["rr"] - varOld
+			data = [time.time()-t0, res["hr"], var
 			csv_writer.writerow(data)
+			varOld = res["rr"]
 	else:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
@@ -460,7 +462,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			except pexpect.TIMEOUT:
 				# If the timer expires, it means that we have lost the
 				# connection with the HR monitor
-				log.warn("Connection lost with " + addr + ". Reconnecting.")
+				log.warning("Connection lost with " + addr + ". Reconnecting.")
 				if sqlfile is not None:
 					sq.commit()
 				gt.sendline("quit")
