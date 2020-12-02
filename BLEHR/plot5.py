@@ -48,52 +48,51 @@ app.layout = html.Div(
 
 def update_graph_scatter(n, range1, dropdown):
 	data_from_csv = pd.read_csv('data.csv')
+	title = ""
+	Yname = ''
+	miniY = 0
+	maxiY = 100
+	typeofplot = 'lines'
+
 	if dropdown == 'HRV':
 		rolling_mean1 = data_from_csv['HRV'].rolling(window=range1).mean()
 		X = data_from_csv.iloc[:,0].values.tolist()
 		Y = data_from_csv.iloc[:,3].values.tolist()
-		
-		layout1 = go.Layout(title = 'Live HRV',
-				xaxis=dict(
-					title="Time [sec]",
-					range=[min(X), max(X)],
-					linecolor="#BCCCDC",  # Sets color of X-axis line
-					showgrid=True  # Removes X-axis grid lines
-				),
-				yaxis=dict(
-					title="ms",  
-					range=[0 , 250],
-					linecolor="#BCCCDC",  # Sets color of Y-axis line
-					showgrid=True ,  # Removes Y-axis grid lines    
-				)
-		)
-		trace1 = go.Scatter(x=X, y=Y,
-						mode='markers', name='Live HRV')
-		trace_a = go.Scatter(x=X, y=rolling_mean1, mode='lines', yaxis='y', name=f'HRV {range1}')
+		#title = "Live HRV"
+		Yname = '[ms]'
+		miniY = 0
+		maxiY = 250
+		typeofplot = 'markers'
+
+
 
 	else:
 		rolling_mean1 = data_from_csv['HR'].rolling(window=range1).mean()
 		X = data_from_csv.iloc[:,0].values.tolist()
 		Y = data_from_csv.iloc[:,1].values.tolist()
-		layout1 = go.Layout(title = 'Live BPM',
-					xaxis=dict(
-						title="Time [sec]",
-						range=[min(X), max(X)],
-						linecolor="#BCCCDC",  # Sets color of X-axis line
-						showgrid=True  # Removes X-axis grid lines
-					),
-					yaxis=dict(
-						title="BPM",  
-						range=[min(Y), max(Y)],
-						linecolor="#BCCCDC",  # Sets color of Y-axis line
-						showgrid=True ,  # Removes Y-axis grid lines    
-					)
-		)
+		#title = "Live HR"
+		Yname = 'BPM'
+		miniY = min(Y)
+		maxiY = max(Y)
+		typeofplot = 'lines'
 
-		trace1 = go.Scatter(x=X, y=Y,
-							mode='lines', name='Live HR')
-		trace_a = go.Scatter(x=X, y=rolling_mean1, mode='lines', yaxis='y', name=f'HR {range1}')
-
+	layout1 = go.Layout(title = title,
+		xaxis=dict(
+			title="Time [sec]",
+			range=[min(X), max(X)],
+			linecolor="#BCCCDC",  # Sets color of X-axis line
+			showgrid=True  # Removes X-axis grid lines
+		),
+		yaxis=dict(
+			title= Yname,  
+			range=[miniY , maxiY],
+			linecolor="#BCCCDC",  # Sets color of Y-axis line
+			showgrid=True ,  # Removes Y-axis grid lines    
+		),margin={'l':50,'r':0.5,'t':100,'b':1}
+	)
+	trace1 = go.Scatter(x=X, y=Y,
+				mode= typeofplot, name=title)
+	trace_a = go.Scatter(x=X, y=rolling_mean1, mode='lines', yaxis='y', name=f'{Yname} {range1}')
 
 	figure = {'data': [trace1],
 				'layout': layout1

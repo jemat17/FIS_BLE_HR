@@ -171,7 +171,7 @@ def insert_db(sq, res, period, min_ce=2, max_ce=60 * 2, grace_commit=2 / 3.):
 def get_ble_hr_mac():
 
 	"""
-	Scans BLE devices and returs the address of the first device found.
+	Scans BLE devices for 10 seconds. And add the found devices to the file mylog.txt. This is done by calling "hcitool lescan" 
 	"""
 	
 	while 1:
@@ -202,7 +202,6 @@ def get_ble_hr_mac():
 
 data=["time","y", "rr", 'HRV']
 t0=time.time()	
-
 
 def heart_data(res, first,file_name):
 	var = 0
@@ -256,58 +255,74 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			sq.execute("CREATE TABLE IF NOT EXISTS sql (tstamp INTEGER, commit_time REAL, commit_every INTEGER)")
 
 	if addr is None:
-		# In case no address has been provided, we scan to find any BLE devices
+		# Call the function get_bla_hr_mac() to scan for BLE devices 
 		get_ble_hr_mac()
 		
+		# Opens the logfile lylog.txt and creates a list called lines[]. Go through the mylog.txt and only takes the lines not containing "unknown". 
+		# The lines are split with line.split() and append to the list lines, to make a list of lists. 
 		with open("mylog.txt", "r") as mylogs:
 				lines = []
 			
 				for line in mylogs:
-					if "(unknown)" not in line: #husk at tilføje NOT 
-						stripped_line = line.strip()
-						line_list = stripped_line.split()
+					if "(unknown)" not in line: 
+						#stripped_line = line.strip()
+						line_list = line.split()
 						lines.append(line_list)
 								
 				log.info(len(lines))
+		
+		#if no MAC adress this if statement return true. 
 		if addr == None:
-			
+			# The variable gui is set to true, and controls whether the GUI should close or remain open. 
 			gui = True
+			# While loop to control if gui is true.  
 			while gui: 
-	# message to be displayed  
+				# The first part of the gui creates five buttons to control the gui. 
+				
+				# message to be displayed  
 				
 				text = "Welcome to the Heart Rate monitoring program"
   
-	# window title 
+				# window title 
 				title = "HR monitor"
   
-	# button list 
+				# button list 
 				button_list = [] 
   
-	# button 1 
+				# button 1 
 				button1 = "Connect"
   
-	# second button 
-				button2 = "Show HR graph"
+				# second button 
+				button2 = "Live HR/HRV graphs"
   
-	# third button 
+				# third button 
 				button3 = "Show HRV graph"
 				
-				button4 = "HR - not live"
+				# fourth button 
+				button4 = "Show HR graph"
+				
+				# fifth button 
+				button5 = "Cancel"
   
-	# appending button to the button list 
+				# appending button to the button list 
 				button_list.append(button1) 
 				button_list.append(button2) 
 				button_list.append(button3) 
-				button_list.append(button4) 
+				button_list.append(button4)
+				button_list.append(button5) 
   
-  
-	# creating a button box 
+				# creating a button box 
 				output = eg.buttonbox(text, title, button_list) 
   
-	# printing the button pressed by the user 
+				# printing the button pressed by the user 
 				#print("User selected option : ", end = " ") 
 				print(output) 
 
+				# If the user clicks cancel, the gui will close
+				if output == "Cancel":
+					gui = False
+				
+				# If the user clicks connect the program shows up to three different devices to connect to. This is controlled with several if statements. 
 				if output == "Connect":
 					
 					msg ="Which devices would you like to connect to?"
@@ -322,6 +337,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	
 					choice = eg.choicebox(msg, title, choices)
 					
+					#Several characters are replaces by the command .replace 
 					s=choice
 					s1=s.replace("'","")
 					s2=s1.replace(",","")
@@ -329,8 +345,10 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					s4=s3.replace("]","")
 
 					line_choice = []
+					#The choise is split to create a list with the different elements in the string 
 					line_choice = s4.split()
 					
+					# Depending on the amount of possible devices the MAC adress variable addr is set to the choice.   
 					if len(lines)==2:
 						if line_choice[0] == lines[1][0]:
 							addr = lines[1][0]
@@ -352,7 +370,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 						if line_choice == lines[3][0]:
 							addr = lines[3][0]
 
-
+					# While retry is true we are trying to connect to the chosen device
 					retry = True
 					while retry:
 
@@ -387,50 +405,52 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 						
 						retry = False
 
-
-				if output == "Show HR graph":
-					print("hey3")
+				#If the user choses "Live HR/HRV graphs" it user webbrowser.open to access the live graph server.    
+				if output == "Live HR/HRV graphs":
 					if addr is not None:
-						print ("hej")
 						webbrowser.open('http://127.0.0.1:8050/')
-						#app.run_server(debug=True)  #få vist graf med HR
 					else:
 						print("Please connect")
 					gui = False
 				
+				
+				# Here the current working directory is joined with the folder data, to access the folder where the data files are saved. 
 				pwd = os.getcwd()
 				ppwd = os.path.join(pwd,'data')
 				
+				#If the user clicks "Show HRV graph", the user can select a data file from the folder by using easygui.fileopenbox
 				if output == "Show HRV graph":
 					
 					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
 					data= pd.read_csv(filename_hr)
-
-					x=data['RR']
+					
+					# The data is plotted using matplotlib
+					y=data['HRV']
+					x=data['Time']
 
 					fig = plt.figure()
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
-					ax.set_ylabel('RR-intervel')
-					ax.plot(x,c='r',label='Your RR-interval')
+					ax.set_ylabel('Heart Rate Varability')
+					ax.scatter(x,y,c='r',label='Your HRV')
 					leg=ax.legend()
 					plt.show()
 					
 					gui = False
 				
-
-				if output == "HR - not live":
+				#Similar to show HRV, the button HR, can be used to show a graph of HR data. 
+				if output == "Show HR graph":
 					
 					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
 					data= pd.read_csv(filename_hr)
 
-					x=data['HR']
-
+					y=data['HR']
+					x=data['Time']
 					fig = plt.figure()
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
 					ax.set_ylabel('Heart Rate')
-					ax.plot(x,c='r',label='Your heart rate')
+					ax.scatter(x,y,c='r',label='Your heart rate')
 					leg=ax.legend()
 					plt.show()
 							
@@ -441,10 +461,8 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	retry = True
 	
 	while retry:	
-		#while 1:
-		#	a=2 #RANDOM
 		if check_battery:
-			gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Returnere batteri niveau!
+			gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Return batteri level!
 			try:
 				gt.expect("value: ([0-9a-f]+)")
 				battery_level = gt.match.group(1)
@@ -492,7 +510,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					
 		with open(file_name+".csv","w") as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = ['Time', 'HR', 'RR']
+			data2 = ['Time', 'HR', 'RR', 'HRV']
 			csv_writer.writerow(data2)
 
 
