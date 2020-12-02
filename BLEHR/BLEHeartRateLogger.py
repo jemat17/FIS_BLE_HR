@@ -29,9 +29,7 @@ import csv
 import pandas as pd	
 import numpy as np
 import easygui as eg
-import pyautogui
 from matplotlib import pyplot as plt
-import re
 import dash
 from dash.dependencies import Output, Input
 import dash_core_components as dcc
@@ -70,7 +68,7 @@ def parse_args():
 	confpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BLEHeartRateLogger.conf")
 	if os.path.exists(confpath):
 
-		config = configparser.ConfigParser()
+		config = configparser.ConfigParser()config
 		config.read([confpath])
 		config = dict(config.items("config"))
 
