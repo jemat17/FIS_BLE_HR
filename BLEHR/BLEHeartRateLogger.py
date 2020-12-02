@@ -27,6 +27,7 @@ import argparse
 import configparser
 import csv
 import pandas as pd	
+import numpy as np
 import easygui as eg
 import pyautogui
 from matplotlib import pyplot as plt
@@ -206,23 +207,37 @@ t0=time.time()
 def heart_data(res, first,file_name):
 	var = 0
 	data_from_csv = pd.read_csv('data.csv')
-	if len(data_from_csv) > 2:
-		data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)')
-		data_from_csv['rr'] = pd.to_numeric(data_from_csv['rr'])
-		var = (data_from_csv.iloc[-1,2] - data_from_csv.iloc[-2,2])
 
 	if "rr" in res:
+		if type(data_from_csv['rr'].iloc[-1]) is str and len(data_from_csv) > 0:
+			data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)')
+			data_from_csv['rr'] = pd.to_numeric(data_from_csv['rr'])
+			if len(data_from_csv) > 2:
+				var = np.absolute(data_from_csv.iloc[-1,2] - data_from_csv.iloc[-2,2])
+				if(var > 250):
+					var = 0 
+
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
 			data = [time.time()-t0, res["hr"], res["rr"], var]
 			csv_writer.writerow(data)
+
 	else:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
 			data = [time.time()-t0, res["hr"], var]
 			csv_writer.writerow(data)
 	
-
+	if "rr" in res:
+		with open(file_name+".csv",'a') as csv_file:
+			csv_writer = csv.writer(csv_file)
+			data2 = [time.time()-t0, res["hr"], res["rr"], var]
+			csv_writer.writerow(data2)
+	else:
+		with open(file_name+".csv",'a') as csv_file:
+			csv_writer = csv.writer(csv_file)
+			data2 = [time.time()-t0, res["hr"], var]
+			csv_writer.writerow(data2)
 
 
 def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
