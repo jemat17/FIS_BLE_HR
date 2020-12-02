@@ -425,13 +425,17 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					data= pd.read_csv(filename_hr)
 					
 					# The data is plotted using matplotlib
-					x=data['HRV']
+
+					y=data['HRV']
+					x=data['Time']
 
 					fig = plt.figure()
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
 					ax.set_ylabel('HRV')
 					ax.plot(x,c='r',label='HRV')
+					ax.set_ylabel('Heart Rate Varability')
+					ax.scatter(x,y,c='r',label='Your HRV')
 					leg=ax.legend()
 					plt.show()
 					
@@ -443,14 +447,14 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					filename_hr=eg.fileopenbox("Select a series file", title, ppwd+"/", [["*.csv", "*.nybser", "Series File"]])
 					data= pd.read_csv(filename_hr)
 
-					x=data['HR']
-
+					y=data['HR']
+					x=data['Time']
 					fig = plt.figure()
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
 					ax.set_title('HR')
 					ax.set_ylabel('Heart Rate')
-					ax.plot(x,c='r',label='Your heart rate')
+					ax.scatter(x,y,c='r',label='Your heart rate')
 					leg=ax.legend()
 					plt.show()
 							
