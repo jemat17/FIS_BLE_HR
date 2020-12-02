@@ -1,24 +1,13 @@
 LE Scan ...
 D9:67:9A:AC:42:EB WHOOP 3A214456
 D9:67:9A:AC:42:EB (unknown)
-<<<<<<< HEAD
-5A:8A:62:8C:C9:B5 (unknown)
-5A:8A:62:8C:C9:B5 (unknown)
-28:60:B8:31:F3:98 (unknown)
-6B:EE:6C:91:E4:28 (unknown)
-6B:EE:6C:91:E4:28 (unknown)
-59:09:AB:C8:3E:23 (unknown)
-59:09:AB:C8:3E:23 (unknown)
-4E:B7:C4:C3:64:BD (unknown)
-=======
-6F:65:C7:93:F9:9B (unknown)
-33:C3:98:4E:D1:4D (unknown)
-26:B9:4E:62:87:96 (unknown)
-5B:62:9E:2F:A4:11 (unknown)
-5E:8D:6C:C9:22:42 (unknown)
-5E:8D:6C:C9:22:42 (unknown)
-5B:38:69:1C:FF:11 (unknown)
-47:D2:38:8C:D2:C8 (unknown)
-47:EA:7C:AB:A5:ED (unknown)
-5B:62:9E:2F:A4:11 (unknown)
->>>>>>> 7a0d01c24288333494182034829adc09dd468710
+19:24:8B:47:83:6B (unknown)
+6F:E8:6B:69:F7:94 (unknown)
+6F:E8:6B:69:F7:94 (unknown)
+6A:6A:6A:86:22:03 (unknown)
+6A:6A:6A:86:22:03 (unknown)
+45:68:3E:03:8E:4E (unknown)
+45:68:3E:03:8E:4E (unknown)
+5A:C2:13:28:01:CB (unknown)
+F6:B6:8D:96:04:0D HRM-Dual:588393
+F6:B6:8D:96:04:0D (unknown)

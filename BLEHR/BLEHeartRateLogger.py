@@ -425,13 +425,13 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					data= pd.read_csv(filename_hr)
 					
 					# The data is plotted using matplotlib
-					x=data['var']
+					x=data['HRV']
 
 					fig = plt.figure()
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
-					ax.set_ylabel('RR-intervel')
-					ax.plot(x,c='r',label='Your RR-interval')
+					ax.set_ylabel('HRV')
+					ax.plot(x,c='r',label='HRV')
 					leg=ax.legend()
 					plt.show()
 					
@@ -448,6 +448,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					fig = plt.figure()
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
+					ax.set_title('HR')
 					ax.set_ylabel('Heart Rate')
 					ax.plot(x,c='r',label='Your heart rate')
 					leg=ax.legend()
@@ -509,10 +510,10 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					
 		with open(file_name+".csv","w") as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = ['Time', 'HR', 'RR']
+			data2 = ['Time', 'HR', 'RR', 'HRV']
 			csv_writer.writerow(data2)
 
-
+		# If the connection to the device is lost, the program tries to reconnect 
 		while 1:
 			try:
 				gt.expect(hr_expect, timeout=10)
@@ -575,6 +576,8 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			res = interpret(list(data))  # Skal converteres til en list for at kunne læse eller se indholdet.
 
 			log.debug(res)
+			
+			# Calls function heart data, that inserts data into files. 
 			heart_data(res, first,file_name)
 			
 			# if startApp == True:
