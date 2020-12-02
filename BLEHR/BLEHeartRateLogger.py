@@ -68,7 +68,7 @@ def parse_args():
 	confpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BLEHeartRateLogger.conf")
 	if os.path.exists(confpath):
 
-		config = configparser.ConfigParser()config
+		config = configparser.ConfigParser()
 		config.read([confpath])
 		config = dict(config.items("config"))
 
@@ -169,7 +169,7 @@ def insert_db(sq, res, period, min_ce=2, max_ce=60 * 2, grace_commit=2 / 3.):
 def get_ble_hr_mac():
 
 	"""
-	Scans BLE devices for 10 seconds. And add the found devices to the file mylog.txt. This is done by calling "hcitool lescan" 
+	Scans BLE devices for 5 seconds. And add the found devices to the file mylog.txt. This is done by calling "hcitool lescan" 
 	"""
 	
 	while 1:
@@ -195,13 +195,13 @@ def get_ble_hr_mac():
 			break
 
 	# We wait for the 'hcitool lescan' to finish
-	time.sleep(1)
+	#time.sleep(1)
 	 
 
 data=["time","y", "rr", 'HRV']
 t0=time.time()	
 
-def heart_data(res, first,file_name):
+def heart_data(res,file_name):
 	var = 0
 	data_from_csv = pd.read_csv('data.csv')
 
@@ -242,16 +242,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 	main routine to which orchestrates everything
 	"""
 	
-	if addr is None:
-		first = True
-	
-	if sqlfile is not None:
-		# Init database connection
-		sq = sqlite3.connect(sqlfile)
-		with sq:
-			sq.execute("CREATE TABLE IF NOT EXISTS hrm (tstamp INTEGER, hr INTEGER, rr INTEGER)")
-			sq.execute("CREATE TABLE IF NOT EXISTS sql (tstamp INTEGER, commit_time REAL, commit_every INTEGER)")
-
 	if addr is None:
 		# Call the function get_bla_hr_mac() to scan for BLE devices 
 		get_ble_hr_mac()
@@ -431,7 +421,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
 					ax.set_ylabel('HRV')
-					ax.plot(x,c='r',label='HRV')
 					ax.set_ylabel('Heart Rate Varability')
 					ax.scatter(x,y,c='r',label='Your HRV')
 					leg=ax.legend()
@@ -580,7 +569,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			log.debug(res)
 			
 			# Calls function heart data, that inserts data into files. 
-			heart_data(res, first,file_name)
+			heart_data(res,file_name)
 			
 			# if startApp == True:
 			# 	app.run_server(debug=True)
