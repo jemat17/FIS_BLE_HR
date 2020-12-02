@@ -32,7 +32,7 @@ setup(
 
     keywords = 'bluetooth heart-rate logging',
     packages = find_packages(),
-    install_requires = ['pexpect', 'configparser' , 'dash', 'dash_core_components', 'dash_html_components', 'plotly', 'webbrowser', 'pandas', 'matplotlib.pyplot', 'easygui', 'numpy']cd D,
+    install_requires = ['pexpect', 'configparser' , 'dash', 'dash_core_components', 'dash_html_components', 'plotly', 'webbrowser', 'pandas', 'matplotlib.pyplot', 'easygui', 'numpy'],
 
     entry_points = {
         'console_scripts': [
