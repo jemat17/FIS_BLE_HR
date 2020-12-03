@@ -21,7 +21,6 @@ import os
 import sys
 import time
 import logging
-import sqlite3
 import pexpect
 import argparse
 import configparser
@@ -75,7 +74,7 @@ def parse_args():
 
 		# We compare here the configuration given in the config file with the
 		# configuration of the parser.
-		args = vars(parser.parse_args([]))
+		args = (parser.parse_args([]))
 		err = False
 		for key in config.iterkeys():
 			if key not in args:
@@ -132,49 +131,12 @@ def interpret(data):
 	return res
 
 
-def insert_db(sq, res, period, min_ce=2, max_ce=60 * 2, grace_commit=2 / 3.):
-	"""
-	Inserts data into the database
-	"""
-
-	if not hasattr(insert_db, "i"):
-		insert_db.i = 0
-	if not hasattr(insert_db, "commit_every"):
-		insert_db.commit_every = 5
-
-	tstamp = int(time.time())
-	if "rr" in res:
-		for rr in res["rr"]:
-			sq.execute("INSERT INTO hrm VALUES (?, ?, ?)", (tstamp, res["hr"], rr))
-	else:
-		sq.execute("INSERT INTO hrm VALUES (?, ?, ?)", (tstamp, res["hr"], -1)) #res["hr"] der er vores heart rate data 
-
-	# Instead of pushing the data to the disk each time, we commit only every
-	# 'commit_every'.
-	if insert_db.i < insert_db.commit_every:
-		insert_db.i += 1
-	else:
-		t = time.time()
-		sq.commit()
-		delta_t = time.time() - t
-		log.debug("sqlite commit time: " + str(delta_t))
-		sq.execute("INSERT INTO sql VALUES (?, ?, ?)", (int(t), delta_t, insert_db.commit_every))
-
-		# Because the time for commiting to the disk is not known in advance,
-		# we measure it and automatically adjust automatically 'commit_every'
-		# following a rule similar to TCP Reno.
-		if delta_t < period * grace_commit:
-			insert_db.commit_every = min(insert_db.commit_every + 1, max_ce)
-		else:
-			insert_db.commit_every = max(insert_db.commit_every / 2, min_ce)
-
-		insert_db.i = 0
-
-
 def get_ble_hr_mac():
 
 	"""
 	Scans BLE devices for 5 seconds. And add the found devices to the file mylog.txt. This is done by calling "hcitool lescan" 
+	After lescan is called write the output to a log called mylog.txt
+	Use expect to look for mac-addr
 	"""
 	
 	while 1:
@@ -203,42 +165,43 @@ data=["time","y", "rr", 'HRV']
 t0=time.time()	
 
 def heart_data(res,file_name):
-	var = 0
+	hrv_variable = 0
 	data_from_csv = pd.read_csv('data.csv')
-
+	# if there is rr data in res.
 	if "rr" in res:
-		if type(data_from_csv['rr'].iloc[-1]) is str and len(data_from_csv) > 0:
-			data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)')
-			data_from_csv['rr'] = pd.to_numeric(data_from_csv['rr'])
-			if len(data_from_csv) > 2:
-				var = np.absolute(data_from_csv.iloc[-1,2] - data_from_csv.iloc[-2,2])
-				if(var > 250):
-					var = 0 
-
+		if type(data_from_csv['rr'].iloc[-1]) is str and len(data_from_csv) > 0: 
+			data_from_csv['rr'] = data_from_csv['rr'].str.extract(r'([0-9]+)') # extract numbers in [ ]
+			data_from_csv['rr'] = pd.to_numeric(data_from_csv['rr'])# convert from str to numbers 
+			if len(data_from_csv) > 2: 
+				hrv_variable = np.absolute(data_from_csv.iloc[-1,2] - data_from_csv.iloc[-2,2]) # calculate hrv from difference between last and current
+				if(hrv_variable > 250): # normal range does not eccede 250 
+					hrv_variable = 0 
+		
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data = [time.time()-t0, res["hr"], res["rr"], var]
+			data = [time.time()-t0, res["hr"], res["rr"], hrv_variable]
 			csv_writer.writerow(data)
-
+	# if no rr data in res, replace with 0
 	else:
 		with open('data.csv', 'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data = [time.time()-t0, res["hr"], var]
+			data = [time.time()-t0, res["hr"], hrv_variable]
 			csv_writer.writerow(data)
-	
+
+	# Make backup data file for /data folder. 	
 	if "rr" in res:
 		with open(file_name+".csv",'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = [time.time()-t0, res["hr"], res["rr"], var]
+			data2 = [time.time()-t0, res["hr"], res["rr"], hrv_variable]
 			csv_writer.writerow(data2)
 	else:
 		with open(file_name+".csv",'a') as csv_file:
 			csv_writer = csv.writer(csv_file)
-			data2 = [time.time()-t0, res["hr"], var]
+			data2 = [time.time()-t0, res["hr"], hrv_variable]
 			csv_writer.writerow(data2)
 
 
-def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
+def main(addr=None, gatttool="gatttool", check_battery=False, hr_handle=None, debug_gatttool=False):
 	"""
 	main routine to which orchestrates everything
 	"""
@@ -247,7 +210,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		# Call the function get_bla_hr_mac() to scan for BLE devices 
 		get_ble_hr_mac()
 		
-		# Opens the logfile lylog.txt and creates a list called lines[]. Go through the mylog.txt and only takes the lines not containing "unknown". 
+		# Opens the logfile mylog.txt and creates a list called lines[]. Go through the mylog.txt and only takes the lines not containing "unknown". 
 		# The lines are split with line.split() and append to the list lines, to make a list of lists. 
 		with open("mylog.txt", "r") as mylogs:
 				lines = []
@@ -261,7 +224,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 		
 		#if no MAC adress this if statement return true. 
 		if addr == None:
-			# The variable gui is set to true, and controls whether the GUI should close or remain open. 
+			# The hrv_variableiable gui is set to true, and controls whether the GUI should close or remain open. 
 			gui = True
 			# While loop to control if gui is true.  
 			while gui: 
@@ -335,7 +298,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					#The choise is split to create a list with the different elements in the string 
 					line_choice = s4.split()
 					
-					# Depending on the amount of possible devices the MAC adress variable addr is set to the choice.   
+					# Depending on the amount of possible devices the MAC adress hrv_variableiable addr is set to the choice.   
 					if len(lines)==2:
 						if line_choice[0] == lines[1][0]:
 							addr = lines[1][0]
@@ -359,7 +322,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					# While retry is true we are trying to connect to the chosen device
 					retry = True
 					while retry:
-
+						# Use gatttools to connect to MAC addr and wait for connection successful. if not try agian. 
 						while 1:
 							log.info("Establishing connection to " + addr)
 							gt = pexpect.spawn(gatttool + " -b " + addr + " -t random --interactive")
@@ -419,7 +382,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					ax =fig.add_subplot(111)
 					ax.set_xlabel('Time')
 					ax.set_ylabel('HRV')
-					ax.set_ylabel('Heart Rate Varability')
+					ax.set_ylabel('Heart Rate hrv_variableability')
 					ax.scatter(x,y,c='r',label='Your HRV')
 					leg=ax.legend()
 					plt.show()
@@ -444,13 +407,12 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					plt.show()
 							
 					gui=False		
-			
-	#sq.close()
+
 	hr_ctl_handle = None
 	retry = True
 	
 	while retry:	
-		if check_battery:
+		if check_battery: # Check battery level.
 			gt.sendline("char-read-uuid 00002a19-0000-1000-8000-00805f9b34fb") # Return batteri level!
 			try:
 				gt.expect("value: ([0-9a-f]+)")
@@ -465,6 +427,9 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			# measurement characteristic.
 			gt.sendline("char-desc")
 
+			# We find fist the hr_handle and then the hr_ctl_handle. 
+			# Hr_ctl_handle is used to subscribe to hr data.
+			# hr_handle
 			while 1:
 				try:
 					gt.expect(r"handle: (0x[0-9a-f]+), uuid: ([0-9a-f]{8})", timeout=10)
@@ -486,12 +451,12 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 		if hr_ctl_handle:
 			# We send the request to get HRM notifications
-
 			gt.sendline("char-write-req " + hr_ctl_handle + " 0100") 
 
 		# Time period between two measures. This will be updated automatically.
 		period = 1.
 		last_measure = time.time() - period
+		# contains the hrm data
 		hr_expect = "Notification handle = " + hr_handle + " value: ([0-9a-f ]+)"
 
 		current_date_and_time = datetime.datetime.now()
@@ -513,8 +478,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 				# connection with the HR monitor
 				log.warning("Connection lost with " + addr + ". Reconnecting.")
 
-				if sqlfile is not None:
-					sq.commit()
 				gt.sendline("quit")
 				try:
 					gt.wait()
@@ -522,6 +485,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					pass
 				time.sleep(1)
 				
+				# Reconnect if connection is lost in case of timeout. 
 				while 1:
 					log.info("Establishing connection to " + addr)
 					gt = pexpect.spawn(gatttool + " -b " + addr + " -t random --interactive")
@@ -569,22 +533,10 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			
 			# Calls function heart data, that inserts data into files. 
 			heart_data(res,file_name)
-			
-			
-			if sqlfile is None:
-				
-				log.info("Heart rate: " + str(res["hr"]))
-				continue
 
-			# Push the data to the database
+			#Print Hr in terminal
+			log.info("Heart rate: " + str(res["hr"]))
 			
-			#insert_db(sq, res, period)
-			
-	if sqlfile is not None:
-		# We close the database properly
-		sq.commit()
-		sq.close()
-	
 	
 	# We quit close the BLE connection properly
 	gt.sendline("quit")
@@ -604,7 +556,7 @@ def cli():
 		data = ['Time', 'HR', 'rr', 'HRV']
 		csv_writer.writerow(data)
 
-
+	# use parse_args to check if a .conf file exist. 
 	args = parse_args()
 
 	if args.g != "gatttool" and not os.path.exists(args.g):
@@ -616,8 +568,8 @@ def cli():
 		log.setLevel(logging.DEBUG)
 	else:
 		log.setLevel(logging.INFO)
-	
-	main(args.m, args.o, args.g, args.b, args.H, args.d)
+	# call function.
+	main(args.m, args.g, args.b, args.H, args.d)
 
 
 if __name__ == "__main__": cli()

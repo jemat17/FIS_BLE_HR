@@ -1,0 +1,16 @@
+LE Scan ...
+7E:A4:00:E2:F8:64 (unknown)
+7E:A4:00:E2:F8:64 (unknown)
+D9:67:9A:AC:42:EB WHOOP 3A214456
+5C:75:7A:40:A4:56 (unknown)
+D9:67:9A:AC:42:EB (unknown)
+7D:43:FC:EA:4F:BD (unknown)
+4B:87:82:64:AC:EA (unknown)
+11:C9:69:51:B0:0D (unknown)
+3F:4E:9C:EE:F9:86 (unknown)
+6E:56:2A:BD:77:7D (unknown)
+50:DB:F2:52:F4:4A (unknown)
+7A:0E:74:AB:4E:69 (unknown)
+44:21:8C:AA:A8:04 (unknown)
+70:BF:92:27:36:75 Jabra Elite Active
+60:6E:60:8F:43:02 (unknown)
