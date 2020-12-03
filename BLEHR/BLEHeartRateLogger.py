@@ -108,10 +108,12 @@ def interpret(data):
 
 	if res["hrv_uint8"]:
 		res["hr"] = data[1]
+		
 		i = 2
 	else:
 		res["hr"] = (data[2] << 8) | data[1]
 		i = 3
+		
 
 	if res["ee_status"]:
 		res["ee"] = (data[i + 1] << 8) | data[i]
@@ -121,7 +123,8 @@ def interpret(data):
 		res["rr"] = []
 		while i < len(data):
 			# Note: Need to divide the value by 1024 to get in seconds
-			res["rr"].append((data[i + 1] << 8) | data[i])
+			res["rr"].append((((data[i + 1] << 8) | data[i])/1024)*1000)
+			#print(res["rr"])
 			i += 2
 
 	return res
@@ -194,10 +197,6 @@ def get_ble_hr_mac():
 			hci.close()
 			break
 
-	# We wait for the 'hcitool lescan' to finish
-	#time.sleep(1)
-	 
-
 data=["time","y", "rr", 'HRV']
 t0=time.time()	
 
@@ -253,7 +252,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			
 				for line in mylogs:
 					if "(unknown)" not in line: 
-						#stripped_line = line.strip()
 						line_list = line.split()
 						lines.append(line_list)
 								
@@ -321,7 +319,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 						choices = [lines[1], lines[2]]
 					if len(lines)==4:
 						choices = [lines[1], lines[2],lines[3]]
-						#print(choices)
 	
 					choice = eg.choicebox(msg, title, choices)
 					
@@ -350,7 +347,6 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 							addr = lines[2][0]
 						
 					if len(lines)==4:
-						print("DAV")
 						if line_choice[0] == lines[1][0]:
 							addr = lines[1][0]	
 						if line_choice[0] == lines[2][0]:
@@ -372,7 +368,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 							gt.sendline("connect")
 
 							try:
-								i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30) # Tid i secunder
+								i = gt.expect(["Connection successful.", r"\[CON\]"], timeout=30)
 								if i == 0:
 									gt.expect(r"\[LE\]>", timeout=30)
 
@@ -479,7 +475,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					hr_ctl_handle = handle
 					break
 
-				elif uuid == "00002a37": # 2A37 Er stadart til uuid which is used for getting heart rates data from hrm device
+				elif uuid == "00002a37": # 2A37 Is standard for uuid which is used for getting heart rates data from hrm device
 					hr_handle = handle
 
 			if hr_handle == None:
@@ -488,7 +484,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 		if hr_ctl_handle:
 			# We send the request to get HRM notifications
-			gt.sendline("char-write-req " + hr_ctl_handle + " 0100") # char-write-req beder om at få HR målingerne. FORSTÅR IKKE DET HER! Hvordan giver den alt data
+			gt.sendline("char-write-req " + hr_ctl_handle + " 0100") 
 			
 		# Time period between two measures. This will be updated automatically.
 		period = 1.
@@ -562,18 +558,14 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 			last_measure = tmeasure
 
 			# Get data from gatttool     
-			datahex = gt.match.group(1).strip() # Tager et input fra ???????????
-			data = map(lambda x: int(x, 16), datahex.split(b' ')) #Convertere fra HEX til int.
-			res = interpret(list(data))  # Skal converteres til en list for at kunne læse eller se indholdet.
+			datahex = gt.match.group(1).strip() 
+			data = map(lambda x: int(x, 16), datahex.split(b' ')) #Convert from HEX to int.
+			res = interpret(list(data))  # Converting to a list. 
 
 			log.debug(res)
 			
 			# Calls function heart data, that inserts data into files. 
 			heart_data(res,file_name)
-			
-			# if startApp == True:
-			# 	app.run_server(debug=True)
-			# 	startApp = False
 			
 			
 			if sqlfile is None:
@@ -583,7 +575,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 			# Push the data to the database
 			
-			insert_db(sq, res, period)
+			#insert_db(sq, res, period)
 			
 	if sqlfile is not None:
 		# We close the database properly
