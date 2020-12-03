@@ -37,8 +37,8 @@ app.layout = html.Div(
 			id='graph-update',
 			interval=1000,
 			n_intervals = 0
-		),
-	]		
+		), 
+	],className="container",style={'width':'98%','margin-left':10,'margin-right':10,'max-width':50000}		
 )
 
 @app.callback(Output('live-graph', 'figure'), # This specifies what id is liked to what value. 
@@ -89,7 +89,7 @@ def update_graph_scatter(n, range1, dropdown): # updates the data list. checks i
 			range=[miniY , maxiY],
 			linecolor="#BCCCDC",  # Sets color of Y-axis line
 			showgrid=True ,  # Removes Y-axis grid lines    
-		),margin={'l':50,'r':0.5,'t':100,'b':1}
+		),margin={'l':50,'r':1,'t':45,'b':1}
 	)
 	trace1 = go.Scatter(x=X, y=Y, mode= typeofplot, name=title)
 	trace_a = go.Scatter(x=X, y=rolling_mean1, mode='lines', yaxis='y', name=f'{Yname} {range1}')
