@@ -65,6 +65,7 @@ def parse_args():
 	parser.add_argument("-v", action='store_true', help="Verbose output")
 	parser.add_argument("-d", action='store_true', help="Enable debug of gatttool")
 
+	# See if the BLEHeartRateLogger.conf file exist. 
 	confpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BLEHeartRateLogger.conf")
 	if os.path.exists(confpath):
 
@@ -91,6 +92,7 @@ def parse_args():
 def interpret(data):
 	"""
 	data is a list of integers corresponding to readings from the BLE HR monitor
+	Bitwise operation is performed to interpret the data into res.
 	"""
 
 	byte0 = data[0]
@@ -475,7 +477,7 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 					hr_ctl_handle = handle
 					break
 
-				elif uuid == "00002a37": # 2A37 Is standard for uuid which is used for getting heart rates data from hrm device
+				elif uuid == "00002a37": # 2A37 Er stadard til uuid which is used for getting heart rates data from hrm device
 					hr_handle = handle
 
 			if hr_handle == None:
@@ -484,8 +486,9 @@ def main(addr=None, sqlfile=None, gatttool="gatttool", check_battery=False, hr_h
 
 		if hr_ctl_handle:
 			# We send the request to get HRM notifications
+
 			gt.sendline("char-write-req " + hr_ctl_handle + " 0100") 
-			
+
 		# Time period between two measures. This will be updated automatically.
 		period = 1.
 		last_measure = time.time() - period
