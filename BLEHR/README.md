@@ -136,28 +136,34 @@ In case one of the steps mentionned above fails, check your Linux installation a
 ## HCItool without sudo:
 
 Installs linux capabilities manipulation tools:
+```
 #sudo apt-get install libcap2-bin
-
+```
 Sets the missing capabilities on the executable quite like the setuid bit:
+```
 #sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
-
+```
 Next check that all is good: 
+```
 #getcap !$
-
+```
 Should say:
+```
 > getcap `which hcitool`
 > /usr/bin/hcitool = cap_net_admin,cap_net_raw+eip
- 
+```
 #If connection lost: 
+```
 sudo service bluetooth restart 
+```
 
 ## Contributing
 
 Contributions are welcome.
-
+```
 1. [Fork the repository](https://github.com/jemat17/FIS_BLE_HR)
 2. Create your feature branch (`git checkout -b my-feature`)
 3. Commit your changes (`git commit -am 'Commit message'`)
 4. Push to the branch (`git push origin my-feature`)
 5. Create a pull request
-
+```
