@@ -25,22 +25,37 @@ These python libraries are necessary for running the program.
 Setting up hcitools:
 It is necessary to be able to run hcitool lescan without sudo. This is done by:
 Installs linux capabilities manipulation tools:
+
 #$ sudo apt-get install libcap2-bin
+
 Sets the missing capabilities on the executable quite like the setuid bit:
+
 #$ sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
+
 Next check that all is good: 
+
 #$ getcap `which hcitool`
+
 Should say:
+
 > /usr/bin/hcitool = cap_net_admin,cap_net_raw+eip
+
 Next you will need to program:
+
 You can download the program from github by writing the following in a terminal:
+
 #git clone https://github.com/jemat17/FIS_BLE_HR.git 
+
 When you have install the software you can now take your heart rate sensor device on
 
 To run the program open a terminal and run the following command:
+
 #cd /FIS_BLE_HR/BLEHR
+
 #./start.sh
+
 After writing the program in the terminal, a box will appear where you have to click.
+
 Connect 
 
 When you click connect all bluetooth devices near you will appear, you should now find your heart rate device and then.
