@@ -137,7 +137,7 @@ sudo service bluetooth restart
 
 Contributions are welcome.
 
-1. [Fork the repository](https://github.com/fg1/BLEHeartRateLogger/fork)
+1. [Fork the repository](https://github.com/jemat17/FIS_BLE_HR)
 2. Create your feature branch (`git checkout -b my-feature`)
 3. Commit your changes (`git commit -am 'Commit message'`)
 4. Push to the branch (`git push origin my-feature`)
