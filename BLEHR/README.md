@@ -14,27 +14,31 @@ Communication with the BLE HRM is established using `hcitool` and `gatttool`. Th
 
 ## Installation
 
-###User instructions on Debian/Ubuntu:
+### User instructions on Debian/Ubuntu:
 
 For using this program you first have to install:
-#$ sudo apt-get install bluetooth bluez 
+```
+$ sudo apt-get install bluetooth bluez 
+```
 bluez contains hcitool and gatttools.
-#$ pip3 install pip3 install pexpect dash dash_core_components dash_html_components plotly pandas matplotlib.pyplot easygui numpy
+```
+$ pip3 install pip3 install pexpect dash dash_core_components dash_html_components plotly pandas matplotlib.pyplot easygui numpy
+```
 These python libraries are necessary for running the program. 
 
 Setting up hcitools:
 It is necessary to be able to run hcitool lescan without sudo. This is done by:
 Installs linux capabilities manipulation tools:
 ```
-#$ sudo apt-get install libcap2-bin
+$ sudo apt-get install libcap2-bin
 ```
 Sets the missing capabilities on the executable quite like the setuid bit:
 ```
-#$ sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
+$ sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
 ```
 Next check that all is good: 
 ```
-#$ getcap `which hcitool`
+$ getcap `which hcitool`
 ```
 Should say:
 
@@ -44,20 +48,20 @@ Next you will need to program:
 
 You can download the program from github by writing the following in a terminal:
 ```
-#git clone https://github.com/jemat17/FIS_BLE_HR.git 
+git clone https://github.com/jemat17/FIS_BLE_HR.git 
 ```
 When you have install the software you can now take your heart rate sensor device on
 
 To run the program open a terminal and run the following command:
 ```
-#cd /FIS_BLE_HR/BLEHR
+cd /FIS_BLE_HR/BLEHR
 
-#./start.sh
+./start.sh
 ```
 After writing the program in the terminal, a box will appear where you have to click.
-
+```
 Connect 
-
+```
 When you click connect all bluetooth devices near you will appear, you should now find your heart rate device and then.
 “click on your heart rate device” 
 Then click OK
@@ -86,7 +90,7 @@ To start the tool (as root or with correct rights):
 
 Make sure hcitool can run without root. 
 ```
-# ./start.sh
+ ./start.sh
 2015-01-10 13:40:59,326  Trying to find a BLE device
 2015-01-10 13:41:00,856  Establishing connection to 00:11:22:33:44:55
 2015-01-10 13:41:01,115  Connected to 00:11:22:33:44:55
@@ -118,11 +122,11 @@ optional arguments:
 
 In case the tool is not able to connect to your BLE HRM, first check manually that your computer and BLE HRM device are able to talk to eachother using the following steps (as root).
 ```
-# hcitool lescan
+ hcitool lescan
 ```
 This should list the BLE devices around you with their MAC address with something which looks like this: 00:11:22:33:44:55. You can safely Ctrl-C when the device has been found. We will the connect to the device:
 ```
-# gatttool -b 00:11:22:33:44:55 -I
+ gatttool -b 00:11:22:33:44:55 -I
 ```
 This should open a prompt. Type the following commands:
 ```
@@ -137,15 +141,15 @@ In case one of the steps mentionned above fails, check your Linux installation a
 
 Installs linux capabilities manipulation tools:
 ```
-#sudo apt-get install libcap2-bin
+sudo apt-get install libcap2-bin
 ```
 Sets the missing capabilities on the executable quite like the setuid bit:
 ```
-#sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
+sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
 ```
 Next check that all is good: 
 ```
-#getcap !$
+getcap !$
 ```
 Should say:
 ```
